@@ -1,50 +1,172 @@
-# Welcome to your Expo app 👋
+# 🍳 CookShare - Ứng dụng Chia sẻ Công thức Nấu ăn
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+CookShare là ứng dụng mobile giúp người dùng khám phá, chia sẻ công thức nấu ăn và lên kế hoạch bữa ăn với sự hỗ trợ của AI.
 
-## Get started
+## ✨ Tính năng chính
 
-1. Install dependencies
+### 🔍 Khám phá
+- Feed công thức trending
+- Tìm kiếm theo tên, nguyên liệu
+- Lọc theo danh mục, độ khó, thời gian
+- Xem đầu bếp nổi bật
 
-   ```bash
-   npm install
-   ```
+### 📖 Công thức
+- Xem chi tiết công thức với nguyên liệu và hướng dẫn
+- Đánh giá và bình luận
+- Lưu công thức yêu thích
+- Tạo và chia sẻ công thức riêng
 
-2. Start the app
+### 📅 Lịch Ăn (Meal Planning)
+- Lên kế hoạch bữa ăn theo ngày/tuần
+- AI tự động gợi ý thực đơn
+- Nhắc nhở thời gian nấu ăn
+- Tích hợp công thức vào lịch
 
-   ```bash
-   npx expo start
-   ```
+### 🤖 AI Chatbot
+- Tư vấn món ăn theo sở thích
+- Nhận diện nguyên liệu từ ảnh
+- Gợi ý theo chế độ ăn (Keto, Low Carb, Chay...)
+- Video hướng dẫn từ YouTube
 
-In the output, you'll find options to open the app in a
+### 👤 Hồ sơ cá nhân
+- Quản lý thông tin cá nhân
+- Theo dõi streak nấu ăn
+- Hệ thống level và thành tích
+- Quản lý công thức đã tạo
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🛠️ Tech Stack
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Frontend (React Native + Expo)
+- **Framework:** Expo SDK 52
+- **Navigation:** Expo Router
+- **UI:** Custom components với Theming
+- **Icons:** @expo/vector-icons
+- **State:** React Context + Hooks
 
-## Get a fresh project
+### Backend (Node.js + Express)
+- **Runtime:** Node.js 18+
+- **Framework:** Express.js
+- **Database:** MongoDB
+- **Auth:** JWT
+- **AI:** OpenAI API (GPT-4)
+- **Storage:** Cloudinary
 
-When you're ready, run:
+## 📁 Cấu trúc Project
 
-```bash
-npm run reset-project
+```
+CookShare/
+├── app/                    # Expo Router screens
+│   ├── (tabs)/            # Tab screens
+│   │   ├── index.tsx      # Khám phá
+│   │   ├── recipes.tsx    # Công thức
+│   │   ├── meal-planning.tsx
+│   │   ├── chatbot.tsx
+│   │   └── profile.tsx
+│   ├── recipe/[id].tsx    # Chi tiết công thức
+│   ├── login.tsx
+│   └── register.tsx
+│
+├── components/            # Reusable components
+│   ├── ui/               # UI cơ bản
+│   ├── chatbot/          # Chatbot components
+│   └── meal-planning/    # Meal planning components
+│
+├── services/              # API services
+│   ├── api.ts            # Axios instance
+│   ├── recipeService.ts
+│   ├── userService.ts
+│   └── ...
+│
+├── contexts/              # React contexts
+│   └── AuthContext.tsx
+│
+├── constants/             # Constants & theme
+│   └── theme.ts
+│
+├── hooks/                 # Custom hooks
+│   └── use-color-scheme.ts
+│
+└── backend/               # Backend API
+    └── src/
+        ├── controllers/
+        ├── models/
+        ├── routes/
+        ├── middleware/
+        └── utils/
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🚀 Cài đặt
 
-## Learn more
+### Prerequisites
+- Node.js 18+
+- npm hoặc yarn
+- MongoDB
+- Expo CLI
 
-To learn more about developing your project with Expo, look at the following resources:
+### Frontend
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+cd CookShare
+npm install
+npx expo start
+```
 
-## Join the community
+### Backend
 
-Join our community of developers creating universal apps.
+```bash
+cd CookShare/backend
+npm install
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+# Tạo file .env
+cp .env.example .env
+# Cập nhật các biến môi trường
+
+# Seed database (optional)
+npm run seed
+
+# Chạy server
+npm run dev
+```
+
+### Environment Variables
+
+```env
+# Backend (.env)
+MONGODB_URI=mongodb+srv://...
+JWT_SECRET=your-secret-key
+PORT=3000
+
+# OpenAI
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+
+# YouTube
+YOUTUBE_API_KEY=...
+```
+
+## 📱 Screenshots
+
+| Khám phá | Công thức | Lịch Ăn | AI Chat | Profile |
+|----------|-----------|---------|---------|---------|
+| 🔍 | 📖 | 📅 | 🤖 | 👤 |
+
+## 🔗 API Documentation
+
+Xem chi tiết tại: `backend/API_ENDPOINTS.md`
+
+## 👥 Team Development
+
+Xem hướng dẫn phân công tại: `backend/README.md`
+
+## 📄 License
+
+MIT License - Xem file LICENSE để biết thêm chi tiết.
+
+---
+
+Made with ❤️ by CookShare Team

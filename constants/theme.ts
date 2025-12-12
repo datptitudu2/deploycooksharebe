@@ -1,29 +1,48 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Food-themed color palette for CookShare
+ * Warm, appetizing colors inspired by food and cooking
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// Food-themed colors: warm oranges, rich reds, fresh greens
+const tintColorLight = '#FF6B35'; // Warm orange - like cooked food
+const tintColorDark = '#FFB84D'; // Golden yellow - like butter/golden food
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
+    text: '#2C1810', // Dark brown - like coffee/chocolate
+    textSecondary: '#7A6B63', // Muted brown for secondary text
+    background: '#FFF8F0', // Warm cream - like vanilla cream
     tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
+    icon: '#8B4513', // Saddle brown
+    tabIconDefault: '#A0826D', // Muted brown
     tabIconSelected: tintColorLight,
+    primary: '#FF6B35', // Warm orange
+    secondary: '#4ECDC4', // Fresh mint green
+    accent: '#FFB84D', // Golden yellow
+    error: '#E63946', // Tomato red
+    success: '#06A77D', // Fresh green
+    warning: '#F77F00', // Orange warning
+    card: '#FFFFFF', // Card background
+    border: '#E8DDD5', // Border color
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: '#FFF8F0', // Cream white
+    textSecondary: '#A0928A', // Muted text for dark mode
+    background: '#0D0D1A', // Dark background
     tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    icon: '#D4A574', // Light brown
+    tabIconDefault: '#8B7355', // Muted brown
     tabIconSelected: tintColorDark,
+    primary: '#FF6B35', // Warm orange
+    secondary: '#4ECDC4', // Fresh mint green
+    accent: '#FFB84D', // Golden yellow
+    error: '#E63946', // Tomato red
+    success: '#06A77D', // Fresh green
+    warning: '#F77F00', // Orange warning
+    card: '#1A1A2E', // Card background
+    border: '#2A2A3E', // Border color
   },
 };
 
