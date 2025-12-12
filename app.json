@@ -27,7 +27,7 @@
         "RECEIVE_BOOT_COMPLETED",
         "VIBRATE"
       ],
-      "package": "com.anonymous.CookShare",
+      "package": "com.datptitudu.cookshare",
       "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
