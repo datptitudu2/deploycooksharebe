@@ -1,0 +1,267 @@
+PHÂN CHIA MODULE DỰ ÁN COOKSHARE - PHẦN 2
+==========================================
+PHÚC VÀ HIẾU
+
+THÔNG TIN CHUNG
+---------------
+Dự án: CookShare - Ứng dụng chia sẻ công thức nấu ăn
+Người phụ trách: Phúc và Hiếu
+
+CÁCH ĐỌC TÀI LIỆU NÀY
+----------------------
+- Đọc hết phần module của mình trước
+- Xem danh sách file cần làm việc
+- Đọc luồng xử lý để hiểu cách code hoạt động
+- Review code hiện tại để hiểu cấu trúc
+- Nếu có thắc mắc, hỏi leader trước khi code
+
+QUY TRÌNH LÀM VIỆC
+------------------
+1. Đọc module assignment của mình
+2. Review code hiện tại trong module đó
+3. Hiểu luồng xử lý (flow) của module
+4. Code theo yêu cầu
+5. Test kỹ trước khi commit
+6. Code review với leader trước khi merge
+
+==========================================
+MODULE 2: RECIPES
+==========================================
+NGƯỜI PHỤ TRÁCH: HIẾU
+ĐỘ PHỨC TẠP: TRUNG BÌNH
+
+Mục đích: Quản lý công thức nấu ăn, CRUD, tìm kiếm, lọc, đánh giá, bình luận
+
+File Backend cần làm việc:
+- backend/src/controllers/recipeController.js
+- backend/src/controllers/recipeManagementController.js
+- backend/src/routes/recipeRoutes.js
+- backend/src/routes/recipeManagementRoutes.js
+- backend/src/models/Recipe.js
+
+File Frontend cần làm việc:
+- app/(tabs)/recipes.tsx - Màn hình danh sách công thức
+- app/recipe/[id].tsx - Chi tiết công thức
+- app/recipe/create.tsx - Tạo công thức mới
+- app/recipe/edit/[id].tsx - Chỉnh sửa công thức
+- app/recipe/my-recipes.tsx - Công thức của tôi
+- app/recipe/saved-recipes.tsx - Công thức đã lưu
+
+API Endpoints cần xử lý:
+- GET /api/recipes - Lấy danh sách công thức (có tìm kiếm, lọc)
+- GET /api/recipes/:recipeId - Lấy chi tiết công thức
+- POST /api/recipes - Tạo công thức mới
+- PUT /api/recipes/:recipeId - Cập nhật công thức
+- DELETE /api/recipes/:recipeId - Xóa công thức
+- GET /api/recipes/trending - Lấy công thức trending
+- GET /api/recipes/newest - Lấy công thức mới nhất
+- GET /api/recipes/featured-chefs - Lấy danh sách đầu bếp nổi bật
+- POST /api/recipes/:recipeId/like - Like/Unlike công thức
+- POST /api/recipes/:recipeId/save - Lưu/Bỏ lưu công thức
+- POST /api/recipes/:recipeId/rate - Đánh giá công thức
+- GET /api/recipes/:recipeId/comments - Lấy bình luận
+- POST /api/recipes/:recipeId/comments - Thêm bình luận
+- PUT /api/recipes/:recipeId/comments/:commentId - Chỉnh sửa bình luận
+- DELETE /api/recipes/:recipeId/comments/:commentId - Xóa bình luận
+- POST /api/recipes/:recipeId/comments/:commentId/reply - Trả lời bình luận
+
+Luồng xử lý Recipes:
+1. Hiển thị danh sách công thức:
+   - Load công thức theo filter (category, difficulty, time)
+   - Tìm kiếm theo tên, nguyên liệu
+   - Phân trang (pagination)
+2. Chi tiết công thức:
+   - Hiển thị thông tin đầy đủ (nguyên liệu, hướng dẫn, ảnh)
+   - Hiển thị bình luận (có phân trang)
+   - User có thể like, save, rate, comment
+3. Tạo công thức:
+   - Form nhập thông tin (tên, mô tả, nguyên liệu, bước làm)
+   - Upload ảnh công thức
+   - Lưu vào database
+4. Chỉnh sửa công thức:
+   - Load thông tin hiện tại
+   - Cho phép chỉnh sửa
+   - Lưu lại
+5. Xóa công thức:
+   - Xác nhận trước khi xóa
+   - Xóa khỏi database
+
+Nhiệm vụ cụ thể:
+- CRUD công thức (Create, Read, Update, Delete)
+- Tìm kiếm công thức (theo tên, nguyên liệu)
+- Lọc công thức (category, difficulty, time, diet)
+- Like/Unlike công thức
+- Lưu/Bỏ lưu công thức (saved recipes)
+- Đánh giá công thức (rating 1-5 sao)
+- Bình luận công thức (comment, reply)
+- Upload ảnh công thức (multer, storage)
+- Hiển thị avatar tác giả
+- Featured chefs (đầu bếp có nhiều công thức nhất)
+- Trending recipes (công thức được like nhiều nhất)
+- Pagination cho danh sách công thức
+
+==========================================
+MODULE 3: HOME, STORIES, CHALLENGES
+==========================================
+NGƯỜI PHỤ TRÁCH: PHÚC
+ĐỘ PHỨC TẠP: TRUNG BÌNH
+
+HOME MODULE (Discovery)
+------------------------
+Mục đích: Màn hình chính, hiển thị công thức trending, đầu bếp nổi bật, mẹo nấu ăn, challenge
+
+File Backend cần làm việc:
+- backend/src/controllers/recipeManagementController.js (getFeaturedChefs)
+- backend/src/routes/storyRoutes.js (getTips)
+- backend/src/routes/challengeRoutes.js (getTodayChallenge)
+
+File Frontend cần làm việc:
+- app/(tabs)/index.tsx - Màn hình Home
+
+API Endpoints cần xử lý:
+- GET /api/recipes/featured-chefs - Lấy đầu bếp nổi bật
+- GET /api/stories/tips - Lấy mẹo nấu ăn
+- GET /api/challenges/today - Lấy challenge hôm nay
+- GET /api/recipes/trending - Lấy công thức trending
+- GET /api/recipes/newest - Lấy công thức mới nhất
+
+Luồng xử lý Home:
+1. Khi user mở app: Load tất cả dữ liệu
+2. Hiển thị carousel công thức trending
+3. Hiển thị đầu bếp nổi bật (featured chefs)
+4. Hiển thị mẹo nấu ăn (cooking tips)
+5. Hiển thị challenge hôm nay
+6. User có thể click vào bất kỳ phần nào để xem chi tiết
+
+Nhiệm vụ cụ thể:
+- Carousel công thức trending
+- Featured chefs (avatar, tên, số công thức, số like)
+- Cooking tips (avatar tác giả, tiêu đề, nội dung)
+- Today challenge (tiêu đề, mô tả, điểm thưởng)
+- Pull to refresh
+- Loading state
+- Error handling
+
+STORIES MODULE (Cooking Tips)
+------------------------------
+Mục đích: Chia sẻ mẹo nấu ăn, xem mẹo từ người khác
+
+File Backend cần làm việc:
+- backend/src/routes/storyRoutes.js
+- backend/src/models/Story.js
+
+File Frontend cần làm việc:
+- app/story/all-tips.tsx - Danh sách tất cả mẹo nấu ăn
+- app/story/create.tsx - Tạo mẹo nấu ăn mới
+
+API Endpoints cần xử lý:
+- GET /api/stories/tips - Lấy danh sách mẹo nấu ăn
+- POST /api/stories - Tạo mẹo nấu ăn mới
+- POST /api/stories/:storyId/like - Like/Unlike mẹo
+- DELETE /api/stories/:storyId - Xóa mẹo
+
+Luồng xử lý Stories:
+1. Hiển thị danh sách mẹo nấu ăn (mới nhất trước)
+2. User có thể tạo mẹo mới (tiêu đề, nội dung)
+3. User có thể like mẹo
+4. User có thể xóa mẹo của mình
+
+Nhiệm vụ cụ thể:
+- Hiển thị danh sách mẹo nấu ăn
+- Tạo mẹo mới (form nhập tiêu đề, nội dung)
+- Like/Unlike mẹo
+- Xóa mẹo
+- Hiển thị avatar tác giả
+- Phân trang
+
+CHALLENGES MODULE
+-----------------
+Mục đích: Thách thức nấu ăn hàng ngày, nhận điểm thưởng
+
+File Backend cần làm việc:
+- backend/src/routes/challengeRoutes.js
+- backend/src/models/Challenge.js
+- backend/src/controllers/achievementController.js (markMealAsCooked)
+
+File Frontend cần làm việc:
+- app/challenges.tsx - Màn hình challenge
+
+API Endpoints cần xử lý:
+- GET /api/challenges/today - Lấy challenge hôm nay
+- POST /api/challenges/join - Tham gia challenge
+- POST /api/challenges/complete - Hoàn thành challenge (upload ảnh chứng minh)
+- GET /api/challenges/history - Lịch sử challenge
+- GET /api/challenges/stats - Thống kê challenge
+- GET /api/challenges/completions/:date - Danh sách người đã hoàn thành
+
+Luồng xử lý Challenges:
+1. Hiển thị challenge hôm nay (tiêu đề, mô tả, điểm thưởng)
+2. User tham gia challenge
+3. User nấu món theo yêu cầu
+4. User upload ảnh chứng minh đã nấu
+5. User nhận điểm thưởng, có thể lên level
+6. Hiển thị danh sách người đã hoàn thành challenge
+
+Nhiệm vụ cụ thể:
+- Hiển thị challenge hôm nay
+- Tham gia challenge
+- Upload ảnh chứng minh (proof image)
+- Hoàn thành challenge (tính điểm, lên level)
+- Lịch sử challenge
+- Thống kê challenge (số challenge đã tham gia, đã hoàn thành)
+- Danh sách người đã hoàn thành (leaderboard)
+
+==========================================
+LƯU Ý CHUNG CHO TẤT CẢ MODULE
+==========================================
+
+BACKEND
+-------
+- Tất cả API phải có authentication (trừ login, register)
+- Validate input trước khi xử lý
+- Error handling đầy đủ (try-catch, trả về message rõ ràng)
+- Format response nhất quán: { success: true/false, data: ..., message: ... }
+- Upload file: Dùng multer, lưu vào storage (local hoặc cloud)
+- Format URL: Dùng getFileUrlFromStorage để format URL ảnh
+- Database: Dùng MongoDB, aggregation pipeline khi cần
+- Pagination: Dùng limit, skip cho danh sách
+
+FRONTEND
+--------
+- Loading state: Hiển thị loading khi đang fetch data
+- Error state: Hiển thị lỗi rõ ràng cho user
+- Empty state: Hiển thị khi không có dữ liệu
+- Pull to refresh: Cho danh sách
+- Pagination: Load more hoặc infinite scroll
+- Avatar: Hiển thị placeholder nếu không có avatar
+- Navigation: Dùng Expo Router để navigate
+- State management: Dùng React hooks (useState, useEffect, useCallback)
+- API calls: Dùng axios, handle error
+
+CODE REVIEW
+-----------
+- Code phải clean, dễ đọc
+- Comment code phức tạp
+- Không hardcode, dùng constants
+- Reuse components khi có thể
+- Performance: Tối ưu re-render, lazy load
+- Security: Không expose sensitive data
+
+TESTING
+-------
+- Test trước khi commit
+- Test các trường hợp lỗi
+- Test trên device thật (nếu có)
+- Test với data thật
+
+COMMUNICATION
+-------------
+- Nếu gặp vấn đề: Hỏi leader trước khi code
+- Nếu thấy bug: Báo ngay cho leader
+- Nếu hoàn thành: Báo leader để review
+- Nếu cần help: Hỏi leader hoặc thành viên khác
+
+==========================================
+KẾT THÚC TÀI LIỆU
+==========================================
+

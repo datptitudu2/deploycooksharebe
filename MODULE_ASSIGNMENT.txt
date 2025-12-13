@@ -1,0 +1,579 @@
+PHAN CHIA MODULE DU AN COOKSHARE
+==================================
+
+THONG TIN CHUNG
+---------------
+Du an: CookShare - Ung dung chia se cong thuc nau an
+So nguoi: 4 nguoi
+Leader: [Ten leader] - Ganh nhieu nhat
+Thanh vien: Hieu, Phuc, An
+
+CACH DOC TAI LIEU NAY
+----------------------
+- Doc het phan module cua minh truoc
+- Xem danh sach file can lam viec
+- Doc luong xu ly de hieu cach code hoat dong
+- Review code hien tai de hieu cau truc
+- Neu co thac mac, hoi leader truoc khi code
+
+QUY TRINH LAM VIEC
+------------------
+1. Doc module assignment cua minh
+2. Review code hien tai trong module do
+3. Hieu luong xu ly (flow) cua module
+4. Code theo yeu cau
+5. Test ky truoc khi commit
+6. Code review voi leader truoc khi merge
+
+==========================================
+MODULE 1: CHATBOT, MESSAGES, NOTIFICATIONS
+==========================================
+NGUOI PHU TRACH: LEADER
+DO PHUC TAP: CAO NHAT
+
+CHATBOT MODULE
+--------------
+Muc dich: AI tu van mon an, nhan dien nguyen lieu tu anh, goi y theo che do an
+
+File Backend can lam viec:
+- backend/src/controllers/chatbotController.js
+- backend/src/routes/chatbotRoutes.js
+- backend/src/models/ (neu can model rieng)
+
+File Frontend can lam viec:
+- app/(tabs)/chatbot.tsx
+- components/chatbot/ (neu co)
+
+API Endpoints can xu ly:
+- POST /api/chatbot/message - Gui tin nhan text
+- POST /api/chatbot/message-with-image - Gui tin nhan kem anh
+- GET /api/chatbot/check-apikey - Kiem tra API key
+
+Luong xu ly Chatbot:
+1. User nhap tin nhan hoac chup anh
+2. Frontend gui request den backend
+3. Backend xu ly:
+   - Neu co anh: Goi OpenAI Vision API de nhan dien nguyen lieu
+   - Neu chi co text: Goi OpenAI Chat API de tu van
+   - Xu ly context: Lay lich su chat, thong tin user, thoi tiet
+4. Backend tra ve response tu AI
+5. Frontend hien thi response cho user
+6. Neu user chon them mon vao lich: Goi API meal planning
+
+Nhiem vu cu the:
+- Kiem tra va xu ly loi API (429, 401, timeout)
+- Toi uu prompt de giam token usage
+- Xu ly context chat (luu lich su, nho thong tin user)
+- Tich hop YouTube API de lay video huong dan
+- Xu ly anh upload (multer, storage)
+- Hien thi loading state, error state
+
+MESSAGES MODULE
+---------------
+Muc dich: Nhan tin truc tiep giua cac user, gui anh, gui voice
+
+File Backend can lam viec:
+- backend/src/controllers/messageController.js
+- backend/src/routes/messageRoutes.js
+- backend/src/models/Message.js (neu co)
+
+File Frontend can lam viec:
+- app/messages/index.tsx - Danh sach conversations
+- app/messages/[partnerId].tsx - Man hinh chat voi 1 nguoi
+
+API Endpoints can xu ly:
+- POST /api/messages/send - Gui tin nhan (co the kem anh, voice)
+- GET /api/messages/conversations - Lay danh sach conversations
+- GET /api/messages/conversation/:partnerId - Lay tin nhan voi 1 nguoi
+- GET /api/messages/unread-count - Dem so tin nhan chua doc
+- PUT /api/messages/:messageId/reaction - Them/xoa cam xuc
+- DELETE /api/messages/:messageId - Xoa tin nhan (thu hoi)
+- DELETE /api/messages/conversation/:partnerId - Xoa toan bo cuoc tro chuyen
+
+Luong xu ly Messages:
+1. User chon nguoi de nhan tin tu danh sach conversations
+2. Frontend load tin nhan cu (pagination)
+3. User go tin nhan moi:
+   - Neu co anh/voice: Upload file truoc
+   - Gui request POST /api/messages/send
+4. Backend luu tin nhan vao database
+5. Backend tao notification cho nguoi nhan
+6. Frontend hien thi tin nhan moi ngay lap tuc (real-time neu co)
+7. Khi nguoi nhan mo app: Cap nhat unread count, hien thi badge
+
+Nhiem vu cu the:
+- Upload file (anh, voice) voi multer
+- Real-time messaging (WebSocket hoac polling)
+- Unread count tracking
+- Reaction (like, love, etc.)
+- Xoa tin nhan (soft delete hoac hard delete)
+- Pagination cho tin nhan cu
+- Hien thi avatar, ten nguoi gui
+- Tim kiem trong conversations
+
+NOTIFICATIONS MODULE
+--------------------
+Muc dich: Thong bao cho user ve like, comment, follow, message, challenge
+
+File Backend can lam viec:
+- backend/src/controllers/notificationController.js
+- backend/src/routes/notificationRoutes.js
+- backend/src/models/Notification.js
+- backend/src/utils/notificationHelper.js
+
+File Frontend can lam viec:
+- app/notifications.tsx
+
+API Endpoints can xu ly:
+- GET /api/notifications - Lay danh sach notifications
+- GET /api/notifications/unread-count - Lay so notifications chua doc
+- PUT /api/notifications/:notificationId/read - Danh dau da doc
+- PUT /api/notifications/read-all - Danh dau tat ca da doc
+- DELETE /api/notifications/:notificationId - Xoa notification
+- DELETE /api/notifications/read - Xoa tat ca notifications da doc
+- POST /api/notifications/push-token - Luu push token
+
+Luong xu ly Notifications:
+1. Khi co su kien (like, comment, follow, message):
+   - Controller tuong ung goi notificationHelper
+   - Tao notification trong database
+   - Neu co push token: Gui push notification
+2. User mo app: Frontend load notifications
+3. User click vao notification: Chuyen den man hinh lien quan, danh dau da doc
+4. User co the xoa notification hoac danh dau tat ca da doc
+
+Nhiem vu cu the:
+- Tao notification khi co like, comment, follow, message, challenge
+- Push notification (Expo Notifications)
+- Unread count badge
+- Danh dau da doc (mark as read)
+- Xoa notification
+- Hien thi avatar nguoi thuc hien hanh dong
+- Phan loai notification (like, comment, follow, etc.)
+- Link notification den man hinh dung (recipe detail, profile, etc.)
+
+==========================================
+MODULE 2: RECIPES
+==========================================
+NGUOI PHU TRACH: HIEU
+DO PHUC TAP: TRUNG BINH
+
+Muc dich: Quan ly cong thuc nau an, CRUD, tim kiem, loc, danh gia, binh luan
+
+File Backend can lam viec:
+- backend/src/controllers/recipeController.js
+- backend/src/controllers/recipeManagementController.js
+- backend/src/routes/recipeRoutes.js
+- backend/src/routes/recipeManagementRoutes.js
+- backend/src/models/Recipe.js
+
+File Frontend can lam viec:
+- app/(tabs)/recipes.tsx - Man hinh danh sach cong thuc
+- app/recipe/[id].tsx - Chi tiet cong thuc
+- app/recipe/create.tsx - Tao cong thuc moi
+- app/recipe/edit/[id].tsx - Chinh sua cong thuc
+- app/recipe/my-recipes.tsx - Cong thuc cua toi
+- app/recipe/saved-recipes.tsx - Cong thuc da luu
+
+API Endpoints can xu ly:
+- GET /api/recipes - Lay danh sach cong thuc (co tim kiem, loc)
+- GET /api/recipes/:recipeId - Lay chi tiet cong thuc
+- POST /api/recipes - Tao cong thuc moi
+- PUT /api/recipes/:recipeId - Cap nhat cong thuc
+- DELETE /api/recipes/:recipeId - Xoa cong thuc
+- GET /api/recipes/trending - Lay cong thuc trending
+- GET /api/recipes/newest - Lay cong thuc moi nhat
+- GET /api/recipes/featured-chefs - Lay danh sach dau bep noi bat
+- POST /api/recipes/:recipeId/like - Like/Unlike cong thuc
+- POST /api/recipes/:recipeId/save - Luu/Bo luu cong thuc
+- POST /api/recipes/:recipeId/rate - Danh gia cong thuc
+- GET /api/recipes/:recipeId/comments - Lay binh luan
+- POST /api/recipes/:recipeId/comments - Them binh luan
+- PUT /api/recipes/:recipeId/comments/:commentId - Chinh sua binh luan
+- DELETE /api/recipes/:recipeId/comments/:commentId - Xoa binh luan
+- POST /api/recipes/:recipeId/comments/:commentId/reply - Tra loi binh luan
+
+Luong xu ly Recipes:
+1. Hien thi danh sach cong thuc:
+   - Load cong thuc theo filter (category, difficulty, time)
+   - Tim kiem theo ten, nguyen lieu
+   - Phan trang (pagination)
+2. Chi tiet cong thuc:
+   - Hien thi thong tin day du (nguyen lieu, huong dan, anh)
+   - Hien thi binh luan (co phan trang)
+   - User co the like, save, rate, comment
+3. Tao cong thuc:
+   - Form nhap thong tin (ten, mo ta, nguyen lieu, buoc lam)
+   - Upload anh cong thuc
+   - Luu vao database
+4. Chinh sua cong thuc:
+   - Load thong tin hien tai
+   - Cho phep chinh sua
+   - Luu lai
+5. Xoa cong thuc:
+   - Xac nhan truoc khi xoa
+   - Xoa khoi database
+
+Nhiem vu cu the:
+- CRUD cong thuc (Create, Read, Update, Delete)
+- Tim kiem cong thuc (theo ten, nguyen lieu)
+- Loc cong thuc (category, difficulty, time, diet)
+- Like/Unlike cong thuc
+- Luu/Bo luu cong thuc (saved recipes)
+- Danh gia cong thuc (rating 1-5 sao)
+- Binh luan cong thuc (comment, reply)
+- Upload anh cong thuc (multer, storage)
+- Hien thi avatar tac gia
+- Featured chefs (dau bep co nhieu cong thuc nhat)
+- Trending recipes (cong thuc duoc like nhieu nhat)
+- Pagination cho danh sach cong thuc
+
+==========================================
+MODULE 3: HOME, STORIES, CHALLENGES
+==========================================
+NGUOI PHU TRACH: PHUC
+DO PHUC TAP: TRUNG BINH
+
+HOME MODULE (Discovery)
+------------------------
+Muc dich: Man hinh chinh, hien thi cong thuc trending, dau bep noi bat, meo nau an, challenge
+
+File Backend can lam viec:
+- backend/src/controllers/recipeManagementController.js (getFeaturedChefs)
+- backend/src/routes/storyRoutes.js (getTips)
+- backend/src/routes/challengeRoutes.js (getTodayChallenge)
+
+File Frontend can lam viec:
+- app/(tabs)/index.tsx - Man hinh Home
+
+API Endpoints can xu ly:
+- GET /api/recipes/featured-chefs - Lay dau bep noi bat
+- GET /api/stories/tips - Lay meo nau an
+- GET /api/challenges/today - Lay challenge hom nay
+- GET /api/recipes/trending - Lay cong thuc trending
+- GET /api/recipes/newest - Lay cong thuc moi nhat
+
+Luong xu ly Home:
+1. Khi user mo app: Load tat ca du lieu
+2. Hien thi carousel cong thuc trending
+3. Hien thi dau bep noi bat (featured chefs)
+4. Hien thi meo nau an (cooking tips)
+5. Hien thi challenge hom nay
+6. User co the click vao bat ky phan nao de xem chi tiet
+
+Nhiem vu cu the:
+- Carousel cong thuc trending
+- Featured chefs (avatar, ten, so cong thuc, so like)
+- Cooking tips (avatar tac gia, tieu de, noi dung)
+- Today challenge (tieu de, mo ta, diem thuong)
+- Pull to refresh
+- Loading state
+- Error handling
+
+STORIES MODULE (Cooking Tips)
+------------------------------
+Muc dich: Chia se meo nau an, xem meo tu nguoi khac
+
+File Backend can lam viec:
+- backend/src/routes/storyRoutes.js
+- backend/src/models/Story.js
+
+File Frontend can lam viec:
+- app/story/all-tips.tsx - Danh sach tat ca meo nau an
+- app/story/create.tsx - Tao meo nau an moi
+
+API Endpoints can xu ly:
+- GET /api/stories/tips - Lay danh sach meo nau an
+- POST /api/stories - Tao meo nau an moi
+- POST /api/stories/:storyId/like - Like/Unlike meo
+- DELETE /api/stories/:storyId - Xoa meo
+
+Luong xu ly Stories:
+1. Hien thi danh sach meo nau an (moi nhat truoc)
+2. User co the tao meo moi (tieu de, noi dung)
+3. User co the like meo
+4. User co the xoa meo cua minh
+
+Nhiem vu cu the:
+- Hien thi danh sach meo nau an
+- Tao meo moi (form nhap tieu de, noi dung)
+- Like/Unlike meo
+- Xoa meo
+- Hien thi avatar tac gia
+- Phan trang
+
+CHALLENGES MODULE
+-----------------
+Muc dich: Thach thuc nau an hang ngay, nhan diem thuong
+
+File Backend can lam viec:
+- backend/src/routes/challengeRoutes.js
+- backend/src/models/Challenge.js
+- backend/src/controllers/achievementController.js (markMealAsCooked)
+
+File Frontend can lam viec:
+- app/challenges.tsx - Man hinh challenge
+
+API Endpoints can xu ly:
+- GET /api/challenges/today - Lay challenge hom nay
+- POST /api/challenges/join - Tham gia challenge
+- POST /api/challenges/complete - Hoan thanh challenge (upload anh chung minh)
+- GET /api/challenges/history - Lich su challenge
+- GET /api/challenges/stats - Thong ke challenge
+- GET /api/challenges/completions/:date - Danh sach nguoi da hoan thanh
+
+Luong xu ly Challenges:
+1. Hien thi challenge hom nay (tieu de, mo ta, diem thuong)
+2. User tham gia challenge
+3. User nau mon theo yeu cau
+4. User upload anh chung minh da nau
+5. User nhan diem thuong, co the len level
+6. Hien thi danh sach nguoi da hoan thanh challenge
+
+Nhiem vu cu the:
+- Hien thi challenge hom nay
+- Tham gia challenge
+- Upload anh chung minh (proof image)
+- Hoan thanh challenge (tinh diem, len level)
+- Lich su challenge
+- Thong ke challenge (so challenge da tham gia, da hoan thanh)
+- Danh sach nguoi da hoan thanh (leaderboard)
+
+==========================================
+MODULE 4: AUTH, PROFILE, MEAL PLANNING, ACHIEVEMENTS
+==========================================
+NGUOI PHU TRACH: AN
+DO PHUC TAP: TRUNG BINH
+
+AUTHENTICATION MODULE
+---------------------
+Muc dich: Dang ky, dang nhap, quen mat khau, doi mat khau
+
+File Backend can lam viec:
+- backend/src/controllers/authController.js
+- backend/src/routes/authRoutes.js
+- backend/src/middleware/auth.js
+
+File Frontend can lam viec:
+- app/login.tsx
+- app/register.tsx
+- app/onboarding.tsx (neu co)
+
+API Endpoints can xu ly:
+- POST /api/auth/register - Dang ky tai khoan
+- POST /api/auth/login - Dang nhap
+- POST /api/auth/forgot-password - Quen mat khau
+- POST /api/auth/reset-password - Dat lai mat khau
+
+Luong xu ly Authentication:
+1. Dang ky:
+   - User nhap thong tin (email, password, name)
+   - Validate thong tin
+   - Ma hoa password
+   - Tao user trong database
+   - Tra ve JWT token
+2. Dang nhap:
+   - User nhap email, password
+   - Kiem tra thong tin
+   - Tra ve JWT token
+3. Quen mat khau:
+   - User nhap email
+   - Gui email reset password (neu co)
+   - Hoac tra ve reset token
+4. Dat lai mat khau:
+   - User nhap reset token, mat khau moi
+   - Cap nhat mat khau trong database
+
+Nhiem vu cu the:
+- Dang ky tai khoan (validate email, password)
+- Dang nhap (JWT token)
+- Quen mat khau (reset token)
+- Dat lai mat khau
+- Validate input (email format, password strength)
+- Error handling (email da ton tai, sai mat khau)
+- Luu token trong SecureStore (frontend)
+
+PROFILE MODULE
+--------------
+Muc dich: Quan ly thong tin ca nhan, xem profile nguoi khac, follow/unfollow
+
+File Backend can lam viec:
+- backend/src/controllers/userController.js
+- backend/src/routes/userRoutes.js
+- backend/src/models/User.js
+
+File Frontend can lam viec:
+- app/(tabs)/profile.tsx - Profile cua toi
+- app/user/[userId].tsx - Profile nguoi khac
+
+API Endpoints can xu ly:
+- GET /api/user/profile - Lay thong tin profile
+- PUT /api/user/profile - Cap nhat thong tin profile
+- POST /api/user/avatar - Upload avatar
+- POST /api/user/change-password - Doi mat khau
+- GET /api/user/:userId - Lay thong tin user theo ID
+- POST /api/user/:userId/follow - Follow/Unfollow user
+- GET /api/user/followers - Lay danh sach followers
+- GET /api/user/following - Lay danh sach following
+- GET /api/user/chefs - Lay danh sach tat ca chefs
+
+Luong xu ly Profile:
+1. Profile cua toi:
+   - Hien thi thong tin (ten, email, avatar, level, diem)
+   - Cho phep chinh sua thong tin
+   - Upload avatar
+   - Doi mat khau
+   - Xem cong thuc cua toi
+   - Xem cong thuc da luu
+   - Xem followers, following
+2. Profile nguoi khac:
+   - Hien thi thong tin (ten, avatar, level, diem)
+   - Follow/Unfollow
+   - Xem cong thuc cua ho
+   - Xem followers, following cua ho
+
+Nhiem vu cu the:
+- Hien thi thong tin profile
+- Cap nhat thong tin (ten, bio, etc.)
+- Upload avatar (multer, storage)
+- Doi mat khau
+- Follow/Unfollow user
+- Hien thi followers, following
+- Hien thi level, diem, badges
+- Hien thi so cong thuc, so like
+- Link den cong thuc cua user
+
+MEAL PLANNING MODULE
+--------------------
+Muc dich: Lap ke hoach bua an theo tuan, them mon vao lich, nhan nhac bua an
+
+File Backend can lam viec:
+- backend/src/controllers/mealPlanningController.js
+- backend/src/routes/mealPlanningRoutes.js
+- backend/src/models/MealPlan.js
+
+File Frontend can lam viec:
+- app/(tabs)/meal-planning.tsx - Man hinh lich an
+- app/meal-planning.tsx (neu co man hinh chi tiet)
+
+API Endpoints can xu ly:
+- GET /api/meal-planning/week - Lay ke hoach bua an theo tuan
+- POST /api/meal-planning/generate-week - AI tu dong tao ke hoach tuan
+- POST /api/meal-planning/add - Them mon vao lich
+- PUT /api/meal-planning/update - Cap nhat mon trong lich
+- DELETE /api/meal-planning/delete - Xoa mon khoi lich
+
+Luong xu ly Meal Planning:
+1. Hien thi lich an theo tuan (7 ngay, 3 bua: sang, trua, toi)
+2. User co the:
+   - Them mon vao lich (chon ngay, bua, cong thuc)
+   - Cap nhat mon trong lich
+   - Xoa mon khoi lich
+   - Dung AI de tu dong tao ke hoach tuan
+3. Nhan nhac bua an (push notification)
+4. Danh dau mon da nau (tich hop voi achievements)
+
+Nhiem vu cu the:
+- Hien thi lich an theo tuan (calendar view)
+- Them mon vao lich (chon ngay, bua, cong thuc)
+- Cap nhat mon trong lich
+- Xoa mon khoi lich
+- AI generate ke hoach tuan (tich hop chatbot)
+- Push notification nhan nhac bua an
+- Danh dau mon da nau (tich hop achievements)
+- Hien thi cong thuc trong lich
+
+ACHIEVEMENTS MODULE
+-------------------
+Muc dich: He thong thanh tich, diem, level, badges, leaderboard
+
+File Backend can lam viec:
+- backend/src/controllers/achievementController.js
+- backend/src/routes/achievementRoutes.js
+- backend/src/models/Achievement.js
+
+File Frontend can lam viec:
+- app/(tabs)/profile.tsx (phan achievements)
+
+API Endpoints can xu ly:
+- GET /api/achievements - Lay thanh tich cua user
+- GET /api/achievements/badges - Lay danh sach badges
+- POST /api/achievements/streak - Cap nhat streak (chuoi ngay nau an)
+- GET /api/achievements/stats - Thong ke tong quan
+- POST /api/achievements/mark-meal-cooked - Danh dau mon da nau (nhan diem)
+- GET /api/achievements/leaderboard - Bang xep hang
+
+Luong xu ly Achievements:
+1. User nhan diem khi:
+   - Danh dau mon da nau
+   - Hoan thanh challenge
+   - Tao cong thuc moi
+   - Nhan like, comment
+2. Khi du diem: Len level
+3. Khi dat dieu kien: Nhan badge
+4. Hien thi leaderboard (top users)
+
+Nhiem vu cu the:
+- Tinh diem (XP) cho user
+- Len level khi du diem
+- Cap nhat streak (chuoi ngay nau an lien tiep)
+- Badges (huy hieu) khi dat dieu kien
+- Danh dau mon da nau (nhan diem)
+- Thong ke (tong diem, level, streak, badges)
+- Leaderboard (top users theo diem)
+- Hien thi thanh tich trong profile
+
+==========================================
+LUU Y CHUNG CHO TAT CA MODULE
+==========================================
+
+BACKEND
+-------
+- Tat ca API phai co authentication (trừ login, register)
+- Validate input truoc khi xu ly
+- Error handling day du (try-catch, tra ve message ro rang)
+- Format response nhat quan: { success: true/false, data: ..., message: ... }
+- Upload file: Dung multer, luu vao storage (local hoac cloud)
+- Format URL: Dung getFileUrlFromStorage de format URL anh
+- Database: Dung MongoDB, aggregation pipeline khi can
+- Pagination: Dung limit, skip cho danh sach
+
+FRONTEND
+--------
+- Loading state: Hien thi loading khi dang fetch data
+- Error state: Hien thi loi ro rang cho user
+- Empty state: Hien thi khi khong co du lieu
+- Pull to refresh: Cho danh sach
+- Pagination: Load more hoac infinite scroll
+- Avatar: Hien thi placeholder neu khong co avatar
+- Navigation: Dung Expo Router de navigate
+- State management: Dung React hooks (useState, useEffect, useCallback)
+- API calls: Dung axios, handle error
+
+CODE REVIEW
+-----------
+- Code phai clean, de doc
+- Comment code phuc tap
+- Khong hardcode, dung constants
+- Reuse components khi co the
+- Performance: Toi uu re-render, lazy load
+- Security: Khong expose sensitive data
+
+TESTING
+-------
+- Test truoc khi commit
+- Test cac truong hop loi
+- Test tren device that (neu co)
+- Test voi data that
+
+COMMUNICATION
+-------------
+- Neu gap van de: Hoi leader truoc khi code
+- Neu thay bug: Bao ngay cho leader
+- Neu hoan thanh: Bao leader de review
+- Neu can help: Hoi leader hoac thanh vien khac
+
+==========================================
+KET THUC TAI LIEU
+==========================================
+
