@@ -13,7 +13,11 @@
     "fine-tune": "node src/scripts/fineTune.js",
     "check-finetune": "node src/scripts/checkFineTune.js",
     "watch-finetune": "node src/scripts/watchFineTune.js",
-    "check-model": "node src/scripts/checkModel.js"
+    "check-model": "node src/scripts/checkModel.js",
+    "generate-training": "node src/scripts/generateTrainingData.js",
+    "test-apikey": "node src/scripts/testApiKey.js",
+    "list-models": "node src/scripts/listFineTunedModels.js",
+    "update-model": "node src/scripts/updateModel.js"
   },
   "dependencies": {
     "axios": "^1.6.2",

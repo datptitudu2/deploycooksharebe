@@ -432,13 +432,13 @@ export default function HomeScreen() {
         <View style={styles.rotdHeader}>
           <View style={styles.sectionHeaderWithIcon}>
             <Ionicons name="star" size={24} color={colors.primary} style={styles.sectionIcon} />
-            <View>
-              <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
-                Món Của Ngày
-              </ThemedText>
-              <ThemedText style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
-                Được yêu thích nhất hôm nay
-              </ThemedText>
+          <View>
+            <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
+              Món Của Ngày
+            </ThemedText>
+            <ThemedText style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
+              Được yêu thích nhất hôm nay
+            </ThemedText>
             </View>
           </View>
         </View>
@@ -610,7 +610,7 @@ export default function HomeScreen() {
         <View style={styles.sectionHeaderRow}>
               <View style={styles.sectionHeaderWithIcon}>
             <Ionicons name="flame" size={24} color={colors.primary} style={styles.sectionIcon} />
-            <View>
+              <View>
             <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
               Đang Thịnh Hành
             </ThemedText>
@@ -670,7 +670,7 @@ export default function HomeScreen() {
         <View style={styles.sectionHeaderRow}>
               <View style={styles.sectionHeaderWithIcon}>
             <Ionicons name="restaurant" size={24} color={colors.primary} style={styles.sectionIcon} />
-            <View>
+              <View>
             <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
               Đầu Bếp Nổi Bật
             </ThemedText>
@@ -678,7 +678,7 @@ export default function HomeScreen() {
               Kết nối với những đầu bếp tài năng
                 </ThemedText>
               </View>
-            </View>
+              </View>
             </View>
 
         <ScrollView
@@ -933,7 +933,7 @@ export default function HomeScreen() {
         <View style={styles.sectionHeaderRow}>
           <View style={[styles.sectionHeaderWithIcon, { flex: 1 }]}>
             <Ionicons name="bulb" size={24} color={colors.primary} style={styles.sectionIcon} />
-            <View style={{ flex: 1 }}>
+          <View style={{ flex: 1 }}>
             <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
               Mẹo Nấu Ăn
             </ThemedText>
@@ -941,7 +941,7 @@ export default function HomeScreen() {
               Tips hữu ích từ các đầu bếp
                 </ThemedText>
               </View>
-            </View>
+              </View>
           
           <View style={styles.tipsHeaderActions}>
             {/* Nút xem tất cả */}
@@ -1120,7 +1120,7 @@ export default function HomeScreen() {
         <View style={styles.sectionHeaderRow}>
           <View style={[styles.sectionHeaderWithIcon, { flex: 1 }]}>
             <Ionicons name="trophy" size={24} color={colors.primary} style={styles.sectionIcon} />
-            <View style={{ flex: 1 }}>
+          <View style={{ flex: 1 }}>
             <ThemedText style={[styles.sectionTitle, { color: colors.text }]}>
               Thử Thách Hôm Nay
             </ThemedText>
@@ -1169,10 +1169,10 @@ export default function HomeScreen() {
               </ThemedText>
               {!isCompleted && (
                 <View style={[styles.challengePointsBadge, { backgroundColor: '#FFD93D' }]}>
-                  <ThemedText style={styles.challengePointsText}>
+                <ThemedText style={styles.challengePointsText}>
                     +{todayChallenge.points}
-                  </ThemedText>
-                </View>
+                </ThemedText>
+              </View>
               )}
             </View>
             
@@ -1219,8 +1219,8 @@ export default function HomeScreen() {
                   <View style={styles.challengeCompletedIconWrapper}>
                     <Ionicons name="trophy" size={18} color="#FFD93D" />
                   </View>
-                </View>
-              )}
+          </View>
+        )}
             </View>
           </View>
         </View>

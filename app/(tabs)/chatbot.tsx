@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, ErrorInfo } from 'react';
 import {
   StyleSheet,
   TextInput,
@@ -49,7 +49,38 @@ interface Message {
   };
 }
 
-export default function ChatbotScreen() {
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('ChatbotScreen Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <ThemedText style={{ fontSize: 16, textAlign: 'center' }}>
+            Đã xảy ra lỗi. Vui lòng thử lại sau.
+          </ThemedText>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function ChatbotScreenContent() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -74,7 +105,10 @@ export default function ChatbotScreen() {
   const historyScrollRef = useRef<ScrollView>(null);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { token } = useAuth();
+  
+  // Safe auth access - useAuth will throw if not in provider, but that's expected
+  const auth = useAuth();
+  const token = auth?.token || null;
 
   useEffect(() => {
     scrollToBottom();
@@ -82,8 +116,12 @@ export default function ChatbotScreen() {
 
   // Load history khi mở màn hình
   useEffect(() => {
-    if (token) {
-      loadHistory();
+    try {
+      if (token) {
+        loadHistory();
+      }
+    } catch (error) {
+      console.error('Error loading history:', error);
     }
   }, [token]);
 
@@ -408,7 +446,13 @@ export default function ChatbotScreen() {
         <ThemedView style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => router.push('/(tabs)')}
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/(tabs)');
+              }
+            }}
           >
             <MaterialIcons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
@@ -1174,4 +1218,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+export default function ChatbotScreen() {
+  return (
+    <ErrorBoundary>
+      <ChatbotScreenContent />
+    </ErrorBoundary>
+  );
+}
 

@@ -94,46 +94,46 @@ export default function CreateRecipeScreen() {
 
   const handleVideoFromLibrary = async () => {
     setShowVideoOptions(false);
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
+            const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (!permission.granted) {
       alertService.warning('Vui lòng cấp quyền truy cập thư viện', 'Cần quyền truy cập');
-      return;
-    }
+              return;
+            }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['videos'],
-      allowsEditing: false,
-      quality: 1,
-      videoMaxDuration: 900, // 15 phút
-    });
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ['videos'],
+              allowsEditing: false,
+              quality: 1,
+              videoMaxDuration: 900, // 15 phút
+            });
 
-    if (!result.canceled && result.assets[0]) {
-      const video = result.assets[0];
-      const fileSizeMB = (video.fileSize || 0) / 1024 / 1024;
-      
-      // Cảnh báo nếu video quá lớn
-      if (fileSizeMB > 100) {
+            if (!result.canceled && result.assets[0]) {
+              const video = result.assets[0];
+              const fileSizeMB = (video.fileSize || 0) / 1024 / 1024;
+              
+              // Cảnh báo nếu video quá lớn
+              if (fileSizeMB > 100) {
         alertService.confirm(
-          `Video của bạn (${fileSizeMB.toFixed(1)}MB) lớn hơn 100MB. Cloudinary free tier có giới hạn 100MB/video. Video có thể không upload được hoặc tốn phí.`,
+                  `Video của bạn (${fileSizeMB.toFixed(1)}MB) lớn hơn 100MB. Cloudinary free tier có giới hạn 100MB/video. Video có thể không upload được hoặc tốn phí.`,
           'Cảnh báo',
           () => {
-            setVideos(prev => [...prev, { 
-              url: video.uri, 
-              isLocal: true,
-              title: video.fileName || 'Video từ thư viện',
-              fileSize: fileSizeMB,
-            }]);
+                        setVideos(prev => [...prev, { 
+                          url: video.uri, 
+                          isLocal: true,
+                          title: video.fileName || 'Video từ thư viện',
+                          fileSize: fileSizeMB,
+                        }]);
           }
-        );
-      } else {
-        setVideos(prev => [...prev, { 
-          url: video.uri, 
-          isLocal: true,
-          title: video.fileName || 'Video từ thư viện',
-          fileSize: fileSizeMB,
-        }]);
-      }
-    }
+                );
+              } else {
+                setVideos(prev => [...prev, { 
+                  url: video.uri, 
+                  isLocal: true,
+                  title: video.fileName || 'Video từ thư viện',
+                  fileSize: fileSizeMB,
+                }]);
+              }
+            }
   };
 
   const handleVideoFromUrl = () => {
@@ -161,7 +161,7 @@ export default function CreateRecipeScreen() {
 
     if (!token) {
       alertService.warning('Vui lòng đăng nhập', 'Lỗi').then(() => {
-        router.back();
+      router.back();
       });
       return;
     }

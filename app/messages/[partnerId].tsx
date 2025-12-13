@@ -1061,22 +1061,22 @@ export default function ChatScreen() {
                   'Bạn có chắc muốn xóa toàn bộ cuộc trò chuyện này? Hành động này không thể hoàn tác.',
                   'Xóa cuộc trò chuyện',
                   async () => {
-                    if (!partnerId || typeof partnerId !== 'string') return;
-                    
-                    try {
-                      const response = await messageService.deleteConversation(partnerId);
-                      if (response.success) {
-                        // Clear messages and navigate back
-                        setMessages([]);
+                        if (!partnerId || typeof partnerId !== 'string') return;
+                        
+                        try {
+                          const response = await messageService.deleteConversation(partnerId);
+                          if (response.success) {
+                            // Clear messages and navigate back
+                            setMessages([]);
                         alertService.success('Đã xóa cuộc trò chuyện', 'Thành công').then(() => {
                           router.back();
                         });
-                      } else {
+                          } else {
                         alertService.error(response.message || 'Không thể xóa cuộc trò chuyện', 'Lỗi');
-                      }
-                    } catch (error: any) {
+                          }
+                        } catch (error: any) {
                       alertService.error('Không thể xóa cuộc trò chuyện. Vui lòng thử lại.', 'Lỗi');
-                    }
+                        }
                   }
                 );
               }}
@@ -1245,10 +1245,10 @@ export default function ChatScreen() {
                                     'Bạn có chắc muốn thu hồi tất cả ảnh này?',
                                     'Thu hồi tin nhắn',
                                     async () => {
-                                      // Xóa tất cả ảnh trong group
-                                      for (const msg of messageOrGroup) {
-                                        await handleDeleteMessage(msg._id);
-                                      }
+                                          // Xóa tất cả ảnh trong group
+                                          for (const msg of messageOrGroup) {
+                                            await handleDeleteMessage(msg._id);
+                                          }
                                     }
                                   );
                                 }}

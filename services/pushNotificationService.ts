@@ -16,6 +16,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -158,7 +160,7 @@ class PushNotificationService {
           hour: 8,
           minute: 0,
           repeats: true,
-        },
+        } as any,
       });
       console.log('✅ Scheduled daily challenge notification for 8:00 AM daily');
     } catch (error) {
@@ -229,7 +231,7 @@ class PushNotificationService {
                   trigger: {
                     date: triggerDate,
                     repeats: false, // Không repeat vì mỗi ngày có meal plan riêng
-                  },
+                  } as any,
                 });
               }
             }
@@ -260,7 +262,7 @@ class PushNotificationService {
                   trigger: {
                     date: triggerDate,
                     repeats: false,
-                  },
+                  } as any,
                 });
               }
             }
@@ -291,7 +293,7 @@ class PushNotificationService {
                   trigger: {
                     date: triggerDate,
                     repeats: false,
-                  },
+                  } as any,
                 });
               }
             }
@@ -328,7 +330,7 @@ class PushNotificationService {
         hour: 7,
         minute: 0,
         repeats: true,
-      },
+      } as any,
     });
 
     // Nhắc nhở bữa trưa - 11:30
@@ -345,7 +347,7 @@ class PushNotificationService {
         hour: 11,
         minute: 30,
         repeats: true,
-      },
+      } as any,
     });
 
     // Nhắc nhở bữa tối - 17:30
@@ -362,7 +364,7 @@ class PushNotificationService {
         hour: 17,
         minute: 30,
         repeats: true,
-      },
+      } as any,
     });
   }
 
@@ -388,7 +390,7 @@ class PushNotificationService {
           hour: 9,
           minute: 0,
           repeats: true,
-        },
+        } as any,
       });
     } catch (error) {
     }
@@ -416,7 +418,7 @@ class PushNotificationService {
           hour: 6,
           minute: 0,
           repeats: true,
-        },
+        } as any,
       });
       console.log('✅ Scheduled daily greeting for 6:00 AM daily');
     } catch (error) {

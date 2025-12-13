@@ -134,47 +134,47 @@ export class Achievement {
   static async addPoints(userId, points) {
     try {
       console.log('Achievement.addPoints called with:', { userId, points });
-      const { db } = await connectToDatabase();
+    const { db } = await connectToDatabase();
       const { ObjectId } = await import('mongodb');
       
       // Đảm bảo userId là ObjectId
       const userObjId = typeof userId === 'string' ? new ObjectId(userId) : userId;
       console.log('User ObjectId:', userObjId.toString());
-      
+    
       console.log('Getting achievements...');
       const achievements = await this.get(userObjId);
       console.log('Current achievements:', { level: achievements.level, points: achievements.points });
-      const oldLevel = achievements.level || 1;
-      const oldPoints = achievements.points || 0;
-      const newPoints = oldPoints + points;
+    const oldLevel = achievements.level || 1;
+    const oldPoints = achievements.points || 0;
+    const newPoints = oldPoints + points;
       console.log('New points:', newPoints);
+    
+    // Tính level: mỗi 100 điểm lên 1 level
+    const newLevel = Math.floor(newPoints / 100) + 1;
+    
+    // Check level up
+    const leveledUp = newLevel > oldLevel;
+    let reward = null;
+    
+    if (leveledUp) {
+      // Tính reward dựa trên level
+      const levelRewards = {
+        2: { points: 20, badge: null },
+        3: { points: 30, badge: null },
+        5: { points: 50, badge: 'rising_star' },
+        10: { points: 100, badge: 'master_chef' },
+        20: { points: 200, badge: 'legend' },
+      };
       
-      // Tính level: mỗi 100 điểm lên 1 level
-      const newLevel = Math.floor(newPoints / 100) + 1;
+      reward = levelRewards[newLevel] || { points: newLevel * 10, badge: null };
       
-      // Check level up
-      const leveledUp = newLevel > oldLevel;
-      let reward = null;
+      // Thưởng điểm bonus khi level up
+      if (reward.points) {
+        // Đã tính trong newPoints rồi, không cần thêm nữa
+      }
       
-      if (leveledUp) {
-        // Tính reward dựa trên level
-        const levelRewards = {
-          2: { points: 20, badge: null },
-          3: { points: 30, badge: null },
-          5: { points: 50, badge: 'rising_star' },
-          10: { points: 100, badge: 'master_chef' },
-          20: { points: 200, badge: 'legend' },
-        };
-        
-        reward = levelRewards[newLevel] || { points: newLevel * 10, badge: null };
-        
-        // Thưởng điểm bonus khi level up
-        if (reward.points) {
-          // Đã tính trong newPoints rồi, không cần thêm nữa
-        }
-        
-        // Unlock badge nếu có
-        if (reward.badge) {
+      // Unlock badge nếu có
+      if (reward.badge) {
           try {
             await this.unlockBadge(userObjId, reward.badge);
           } catch (badgeError) {
@@ -206,24 +206,24 @@ export class Achievement {
         console.log('Retrying update...');
         const retryResult = await db.collection(COLLECTION_NAME).updateOne(
           { userId: userObjId },
-          {
-            $set: {
-              points: newPoints,
-              level: newLevel,
-              updatedAt: new Date(),
-            },
-          }
-        );
+      {
+        $set: {
+          points: newPoints,
+          level: newLevel,
+          updatedAt: new Date(),
+        },
+      }
+    );
         console.log('Retry update result:', { matchedCount: retryResult.matchedCount, modifiedCount: retryResult.modifiedCount });
       }
 
       const returnValue = { 
-        points: newPoints, 
-        level: newLevel, 
-        leveledUp,
-        reward: leveledUp ? reward : null,
-        oldLevel,
-      };
+      points: newPoints, 
+      level: newLevel, 
+      leveledUp,
+      reward: leveledUp ? reward : null,
+      oldLevel,
+    };
       console.log('Returning from addPoints:', returnValue);
       return returnValue;
     } catch (error) {

@@ -108,13 +108,13 @@ export default function AllTipsScreen() {
       
       // Optimistic update UI
       setTips(prevTips => prevTips.map(tip => 
-        tip._id === tipId ? { ...tip, viewCount: tip.viewCount + 1 } : tip
-      ));
-      
+      tip._id === tipId ? { ...tip, viewCount: tip.viewCount + 1 } : tip
+    ));
+    
       // Call API để lưu vào database
-      if (token) {
-        storyService.markAsViewed(tipId).catch(() => {});
-      }
+    if (token) {
+      storyService.markAsViewed(tipId).catch(() => {});
+    }
       
       return newSet;
     });

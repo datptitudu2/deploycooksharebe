@@ -1,0 +1,96 @@
+CookShare - Ứng Dụng Chia Sẻ Công Thức Nấu Ăn Thông Minh
+
+CookShare là ứng dụng chia sẻ công thức nấu ăn hàng đầu, kết hợp sức mạnh của cộng đồng và trí tuệ nhân tạo để mang đến trải nghiệm nấu ăn tuyệt vời cho mọi người. Với CookShare, bạn không chỉ tìm thấy những công thức ngon mà còn được tư vấn món ăn phù hợp theo thời tiết, cảm xúc và sở thích cá nhân.
+
+🌟 TÍNH NĂNG NỔI BẬT:
+
+📱 AI Tư Vấn Món Ăn Thông Minh
+• Tư vấn món ăn theo thời tiết, cảm xúc và tâm trạng
+• Nhận diện nguyên liệu từ ảnh chụp
+• Gợi ý công thức phù hợp với chế độ ăn (giảm cân, tăng cân, chay, keto...)
+• Cung cấp video hướng dẫn nấu ăn từ YouTube
+• Tự động thêm món ăn vào lịch ăn sau khi được tư vấn
+
+🍳 Chia Sẻ Công Thức Đa Dạng
+• Đăng tải công thức nấu ăn với hình ảnh và video
+• Tìm kiếm công thức theo tên, nguyên liệu, danh mục
+• Xem công thức trending, mới nhất, được yêu thích nhất
+• Lưu công thức yêu thích để xem lại sau
+• Đánh giá và bình luận về công thức
+
+👨‍🍳 Kết Nối Với Đầu Bếp
+• Theo dõi các đầu bếp chuyên nghiệp
+• Xem công thức từ đầu bếp bạn yêu thích
+• Nhắn tin trực tiếp với đầu bếp để hỏi về công thức
+• Xem profile và thành tích của đầu bếp
+
+📅 Lịch Ăn Thông Minh
+• Lập kế hoạch bữa ăn theo tuần/tháng
+• Thêm món ăn vào lịch từ AI tư vấn
+• Nhắc nhở bữa ăn hàng ngày
+• Xem lịch sử các món đã ăn
+• Đánh dấu món đã nấu để nhận điểm thưởng
+
+🏆 Hệ Thống Thành Tích & Thử Thách
+• Nhận điểm kinh nghiệm (XP) khi nấu ăn
+• Tăng level và mở khóa huy hiệu
+• Tham gia thử thách nấu ăn hàng ngày
+• Duy trì chuỗi ngày nấu ăn liên tiếp (streak)
+• Xem bảng xếp hạng và cạnh tranh với bạn bè
+
+💬 Tương Tác Cộng Đồng
+• Like và comment công thức
+• Chia sẻ mẹo nấu ăn (Tips)
+• Theo dõi người dùng khác
+• Nhận thông báo về tương tác
+
+📸 Quản Lý Công Thức Cá Nhân
+• Xem tất cả công thức bạn đã đăng
+• Chỉnh sửa và cập nhật công thức
+• Xem thống kê: lượt xem, lượt like, đánh giá
+• Quản lý công thức đã lưu
+
+🎯 Chế Độ Ăn Đa Dạng
+• Hỗ trợ nhiều chế độ: Bình thường, Giảm cân, Tăng cân, Tăng cơ, Chay, Keto, Low-carb
+• AI tư vấn món ăn theo chế độ bạn chọn
+• Lọc công thức theo chế độ ăn
+
+🔔 Thông Báo Thông Minh
+• Nhắc nhở bữa ăn
+• Thông báo khi có người like/comment công thức của bạn
+• Thông báo thử thách mới
+• Cập nhật từ người bạn theo dõi
+
+📊 Thống Kê Cá Nhân
+• Xem level và điểm kinh nghiệm
+• Theo dõi chuỗi ngày nấu ăn
+• Số món đã nấu, công thức đã tạo
+• Tổng lượt xem và like
+• Số huy hiệu đã đạt được
+
+🎨 Giao Diện Đẹp Mắt
+• Dark mode và Light mode
+• Giao diện hiện đại, dễ sử dụng
+• Tối ưu cho mọi kích thước màn hình
+• Trải nghiệm mượt mà, không lag
+
+🔒 Bảo Mật & Quyền Riêng Tư
+• Mật khẩu được mã hóa an toàn
+• Dữ liệu được bảo vệ
+• Quyền riêng tư được tôn trọng
+
+---
+
+CookShare phù hợp cho:
+• Người yêu thích nấu ăn
+• Người muốn học nấu ăn
+• Người muốn quản lý bữa ăn hàng ngày
+• Đầu bếp muốn chia sẻ công thức
+• Người theo chế độ ăn đặc biệt
+
+Tải ngay CookShare để bắt đầu hành trình nấu ăn thông minh của bạn!
+
+---
+
+CookShare - Nơi Cộng Đồng Yêu Nấu Ăn Gặp Gỡ
+

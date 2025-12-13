@@ -73,16 +73,16 @@ export default function MyRecipesScreen() {
       `Bạn có chắc muốn xóa "${recipeName}"?`,
       'Xóa công thức',
       async () => {
-        try {
-          const response = await recipeService.delete(recipeId);
-          if (response.success) {
+            try {
+              const response = await recipeService.delete(recipeId);
+              if (response.success) {
             alertService.success('Đã xóa công thức', 'Thành công');
-            fetchRecipes();
-          }
-        } catch (error) {
+                fetchRecipes();
+              }
+            } catch (error) {
           alertService.error('Không thể xóa công thức', 'Lỗi');
         }
-      }
+            }
     );
   };
 

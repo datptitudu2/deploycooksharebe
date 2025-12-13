@@ -332,14 +332,14 @@ export class Challenge {
         return { error: 'Thiếu thông tin người dùng' };
       }
       
-      const { db } = await connectToDatabase();
-      const { ObjectId } = await import('mongodb');
-      
-      const userObjId = typeof userId === 'string' ? new ObjectId(userId) : userId;
-      const recipeObjId = recipeId ? (typeof recipeId === 'string' ? new ObjectId(recipeId) : recipeId) : null;
+    const { db } = await connectToDatabase();
+    const { ObjectId } = await import('mongodb');
+    
+    const userObjId = typeof userId === 'string' ? new ObjectId(userId) : userId;
+    const recipeObjId = recipeId ? (typeof recipeId === 'string' ? new ObjectId(recipeId) : recipeId) : null;
       
       console.log('Getting today challenge...');
-      const challenge = await this.getTodayChallenge();
+    const challenge = await this.getTodayChallenge();
       console.log('Today challenge:', challenge ? { _id: challenge._id, points: challenge.points } : 'null');
       
       if (!challenge || !challenge._id) {
@@ -350,20 +350,20 @@ export class Challenge {
       // Đảm bảo challenge._id là ObjectId
       const challengeId = challenge._id instanceof ObjectId ? challenge._id : new ObjectId(challenge._id);
       console.log('Challenge ID:', challengeId.toString());
-      
-      // Kiểm tra đã join chưa
+    
+    // Kiểm tra đã join chưa
       console.log('Finding user challenge...');
-      const userChallenge = await db.collection(USER_CHALLENGES_COLLECTION).findOne({
-        userId: userObjId,
+    const userChallenge = await db.collection(USER_CHALLENGES_COLLECTION).findOne({
+      userId: userObjId,
         challengeId: challengeId
-      });
+    });
       console.log('User challenge found:', userChallenge ? { _id: userChallenge._id, joined: userChallenge.joined, completed: userChallenge.completed } : 'null');
-      
-      if (!userChallenge) {
+    
+    if (!userChallenge) {
         console.log('User has not joined the challenge');
-        return { error: 'Bạn chưa tham gia thử thách này' };
-      }
-      
+      return { error: 'Bạn chưa tham gia thử thách này' };
+    }
+    
       // Kiểm tra đã hoàn thành chưa (check cả completed và completedAt)
       if (userChallenge.completed === true) {
         console.log('User already completed challenge:', {
@@ -372,14 +372,14 @@ export class Challenge {
           completed: userChallenge.completed,
           completedAt: userChallenge.completedAt
         });
-        return { error: 'Bạn đã hoàn thành thử thách này rồi' };
-      }
-      
-      // Đánh dấu hoàn thành
+      return { error: 'Bạn đã hoàn thành thử thách này rồi' };
+    }
+    
+    // Đánh dấu hoàn thành
       const updateData = {
-        completed: true,
-        completedAt: new Date(),
-        proofRecipeId: recipeObjId,
+          completed: true,
+          completedAt: new Date(),
+          proofRecipeId: recipeObjId,
       };
       
       if (proofImageUrl) {
@@ -399,26 +399,26 @@ export class Challenge {
         console.error('Failed to update user challenge:', userChallenge._id);
         return { error: 'Không thể cập nhật trạng thái thử thách' };
       }
-      
-      // Tăng số người hoàn thành
+    
+    // Tăng số người hoàn thành
       console.log('Incrementing completedCount for challenge...');
       const challengeUpdateResult = await db.collection(COLLECTION_NAME).updateOne(
         { _id: challengeId },
-        { $inc: { completedCount: 1 } }
-      );
+      { $inc: { completedCount: 1 } }
+    );
       console.log('Challenge update result:', { matchedCount: challengeUpdateResult.matchedCount, modifiedCount: challengeUpdateResult.modifiedCount });
       
       if (challengeUpdateResult.matchedCount === 0) {
         console.warn('Challenge not found when updating completedCount:', challengeId);
       }
-      
+    
       const pointsEarned = challenge.points || 0;
       console.log('Returning success with pointsEarned:', pointsEarned);
-      return {
-        success: true,
+    return {
+      success: true,
         pointsEarned: pointsEarned,
-        challenge
-      };
+      challenge
+    };
     } catch (error) {
       console.error('Error in completeChallenge:', error);
       console.error('Error message:', error.message);

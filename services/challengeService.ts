@@ -101,8 +101,8 @@ const challengeService = {
       return response.data;
     } else {
       // Upload không có ảnh
-      const response = await api.post('/challenges/complete', { recipeId });
-      return response.data;
+    const response = await api.post('/challenges/complete', { recipeId });
+    return response.data;
     }
   },
 

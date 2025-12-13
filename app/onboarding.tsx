@@ -63,7 +63,7 @@ export default function OnboardingScreen() {
 
       if (!authToken) {
         alertService.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.', 'Lỗi').then(() => {
-          router.replace('/login');
+        router.replace('/login');
         });
         return;
       }

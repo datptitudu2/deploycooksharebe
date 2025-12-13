@@ -123,12 +123,17 @@ export const uploadFile = async (file, type = 'avatar') => {
  * @returns {string} URL của file
  */
 export const getFileUrlFromStorage = (req, filename, type = 'avatar', storage = null) => {
+  // Nếu filename đã là URL đầy đủ (external URL), trả về luôn không cần xử lý
+  if (filename && (filename.startsWith('http://') || filename.startsWith('https://'))) {
+    return filename;
+  }
+
   if (!storage) {
     storage = getStorageMode();
   }
 
   if (storage === 'cloud') {
-    // Nếu filename đã là URL đầy đủ (từ upload result)
+    // Nếu filename đã là URL đầy đủ (từ upload result) - case này đã được xử lý ở trên
     if (filename && filename.startsWith('http')) {
       return filename;
     }

@@ -18,4 +18,4 @@ export default function MealPlanningRedirect() {
   }, []);
 
   return null;
-}
+                    }

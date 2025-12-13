@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, ErrorInfo } from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -75,11 +75,47 @@ interface Stats {
   badgesCount: number;
 }
 
-export default function ProfileScreen() {
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('ProfileScreen Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <ThemedText style={{ fontSize: 16, textAlign: 'center' }}>
+            Đã xảy ra lỗi. Vui lòng thử lại sau.
+          </ThemedText>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function ProfileScreenContent() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const isDark = colorScheme === 'dark';
-  const { user, token, logout } = useAuth();
+  
+  // Safe auth access - useAuth will throw if not in provider, but that's expected
+  const auth = useAuth();
+  const user = auth?.user || null;
+  const token = auth?.token || null;
+  const logout = auth?.logout || (async () => {});
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
@@ -141,8 +177,12 @@ export default function ProfileScreen() {
   // Tự động reload stats khi quay lại tab này (sau khi đánh dấu món đã nấu)
   useFocusEffect(
     useCallback(() => {
-      if (token) {
-        loadStats();
+      try {
+        if (token) {
+          loadStats();
+        }
+      } catch (error) {
+        console.error('Error in useFocusEffect:', error);
       }
     }, [token])
   );
@@ -550,10 +590,21 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
+    if (!logout) {
+      alertService.error('Không thể đăng xuất');
+      return;
+    }
     alertService.confirm(
       'Bạn có chắc muốn đăng xuất?',
       'Đăng xuất',
-      logout
+      async () => {
+        try {
+          await logout();
+        } catch (error) {
+          console.error('Logout error:', error);
+          alertService.error('Có lỗi xảy ra khi đăng xuất');
+        }
+      }
     );
   };
 
@@ -2397,3 +2448,11 @@ const styles = StyleSheet.create({
     right: 12,
   },
 });
+
+export default function ProfileScreen() {
+  return (
+    <ErrorBoundary>
+      <ProfileScreenContent />
+    </ErrorBoundary>
+  );
+}

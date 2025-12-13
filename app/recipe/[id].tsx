@@ -1502,15 +1502,15 @@ export default function RecipeDetailScreen() {
       </ScrollView>
 
       {/* Sticky Action Buttons - Fixed at Bottom */}
-      <View style={styles.stickyVideoButtonContainer}>
-        {/* Gradient Overlay - White fade/blur from top */}
-        <LinearGradient
-          colors={isDark 
-            ? ['transparent', 'rgba(13, 13, 26, 0.4)', 'rgba(13, 13, 26, 0.7)', 'rgba(13, 13, 26, 0.9)', '#0D0D1A'] 
-            : ['transparent', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.8)', 'rgba(255, 255, 255, 0.95)']}
-          style={styles.gradientOverlay}
-          locations={[0, 0.3, 0.6, 0.85, 1]}
-        />
+        <View style={styles.stickyVideoButtonContainer}>
+          {/* Gradient Overlay - White fade/blur from top */}
+          <LinearGradient
+            colors={isDark 
+              ? ['transparent', 'rgba(13, 13, 26, 0.4)', 'rgba(13, 13, 26, 0.7)', 'rgba(13, 13, 26, 0.9)', '#0D0D1A'] 
+              : ['transparent', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.8)', 'rgba(255, 255, 255, 0.95)']}
+            style={styles.gradientOverlay}
+            locations={[0, 0.3, 0.6, 0.85, 1]}
+          />
         <View style={styles.bottomActionButtonsRow}>
           {/* Thêm vào lịch - Button 1 */}
           <TouchableOpacity
@@ -1526,56 +1526,56 @@ export default function RecipeDetailScreen() {
           {recipe.videos && recipe.videos.length > 0 && (
             <TouchableOpacity
               style={[styles.bottomActionBtn, { backgroundColor: colors.primary }]}
-              onPress={async () => {
-                if (recipe.videos && recipe.videos.length > 0) {
-                  const firstVideo = recipe.videos[0];
-                  const videoUrl = typeof firstVideo === 'string' ? firstVideo : (firstVideo.url || '');
-                  
-                  // Check if it's a YouTube URL
-                  const isYouTube = /youtube\.com|youtu\.be/.test(videoUrl);
-                  
-                  if (isYouTube) {
-                    // Extract YouTube ID and open directly in YouTube app
-                    const youtubeIdMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
-                    if (youtubeIdMatch && youtubeIdMatch[1]) {
-                      const youtubeId = youtubeIdMatch[1];
-                      const youtubeAppUrl = `vnd.youtube:${youtubeId}`;
-                      try {
-                        const canOpen = await Linking.canOpenURL(youtubeAppUrl);
-                        if (canOpen) {
-                          await Linking.openURL(youtubeAppUrl);
-                          return; // Don't show modal
-                        }
-                      } catch (error) {
-                        // Fall through to show modal
-                      }
-                    }
-                    // Fallback: try regular YouTube URL
+            onPress={async () => {
+              if (recipe.videos && recipe.videos.length > 0) {
+                const firstVideo = recipe.videos[0];
+                const videoUrl = typeof firstVideo === 'string' ? firstVideo : (firstVideo.url || '');
+                
+                // Check if it's a YouTube URL
+                const isYouTube = /youtube\.com|youtu\.be/.test(videoUrl);
+                
+                if (isYouTube) {
+                  // Extract YouTube ID and open directly in YouTube app
+                  const youtubeIdMatch = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+                  if (youtubeIdMatch && youtubeIdMatch[1]) {
+                    const youtubeId = youtubeIdMatch[1];
+                    const youtubeAppUrl = `vnd.youtube:${youtubeId}`;
                     try {
-                      await Linking.openURL(videoUrl);
-                      return; // Don't show modal
+                      const canOpen = await Linking.canOpenURL(youtubeAppUrl);
+                      if (canOpen) {
+                        await Linking.openURL(youtubeAppUrl);
+                        return; // Don't show modal
+                      }
                     } catch (error) {
                       // Fall through to show modal
                     }
                   }
-                  
-                  // For non-YouTube videos, show modal
-                  setSelectedVideo(firstVideo);
-                  setShowVideoModal(true);
+                  // Fallback: try regular YouTube URL
+                  try {
+                    await Linking.openURL(videoUrl);
+                    return; // Don't show modal
+                  } catch (error) {
+                    // Fall through to show modal
+                  }
                 }
-              }}
-              activeOpacity={0.8}
-            >
+                
+                // For non-YouTube videos, show modal
+                setSelectedVideo(firstVideo);
+                setShowVideoModal(true);
+              }
+            }}
+            activeOpacity={0.8}
+          >
               <View style={styles.playIconContainerSmall}>
-                <Ionicons 
-                  name="play" 
+              <Ionicons 
+                name="play" 
                   size={Platform.OS === 'android' ? 14 : 12} 
-                  color="#000" 
-                />
-              </View>
+                color="#000" 
+              />
+            </View>
               <ThemedText style={styles.bottomActionBtnText}>Xem Video</ThemedText>
-            </TouchableOpacity>
-          )}
+          </TouchableOpacity>
+      )}
         </View>
       </View>
 

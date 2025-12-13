@@ -278,17 +278,17 @@ export default function ChallengesScreen() {
         
         // Hiển thị Alert ngay lập tức
         const newLevel = res.data?.newLevel || oldLevel;
-        const levelUp = newLevel > oldLevel;
-        
-        let message = `🎉 Chúc mừng!\n\nBạn đã hoàn thành thử thách và nhận được ${pointsEarned} điểm!`;
-        
-        if (levelUp) {
-          message += `\n\n🏆 Level Up!\nBạn đã lên cấp ${newLevel}!`;
-        }
-        
-        alertService.success(message, 'Hoàn thành thử thách!');
-        
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          const levelUp = newLevel > oldLevel;
+          
+          let message = `🎉 Chúc mừng!\n\nBạn đã hoàn thành thử thách và nhận được ${pointsEarned} điểm!`;
+          
+          if (levelUp) {
+            message += `\n\n🏆 Level Up!\nBạn đã lên cấp ${newLevel}!`;
+          }
+          
+          alertService.success(message, 'Hoàn thành thử thách!');
+          
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         
         // Refresh data ngay lập tức để đảm bảo UI cập nhật đúng
         await fetchData();
@@ -474,19 +474,19 @@ export default function ChallengesScreen() {
                           <ActivityIndicator color="#fff" size="small" />
                         ) : (
                           <>
-                            <ThemedText style={styles.actionBtnText}>
-                              {isJoined ? 'Hoàn thành' : 'Tham gia'}
-                            </ThemedText>
-                            <Ionicons name={isJoined ? 'checkmark' : 'add'} size={18} color="#fff" />
+                        <ThemedText style={styles.actionBtnText}>
+                          {isJoined ? 'Hoàn thành' : 'Tham gia'}
+                        </ThemedText>
+                        <Ionicons name={isJoined ? 'checkmark' : 'add'} size={18} color="#fff" />
                           </>
                         )}
                       </LinearGradient>
                     </TouchableOpacity>
                   ) : (
                     <View style={styles.completedWrapper}>
-                      <View style={styles.completedBadge}>
-                        <Ionicons name="trophy" size={16} color="#FFD93D" />
-                        <ThemedText style={styles.completedText}>Đã hoàn thành!</ThemedText>
+                    <View style={styles.completedBadge}>
+                      <Ionicons name="trophy" size={16} color="#FFD93D" />
+                      <ThemedText style={styles.completedText}>Đã hoàn thành!</ThemedText>
                       </View>
                       <View style={styles.completedRewardPoints}>
                         <ThemedText style={styles.completedRewardPointsText}>

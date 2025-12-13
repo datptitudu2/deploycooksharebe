@@ -2,7 +2,7 @@
   "expo": {
     "name": "CookShare",
     "slug": "CookShare",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "cookshare",
@@ -25,9 +25,14 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE"
+        "VIBRATE",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO"
       ],
       "package": "com.datptitudu.cookshare",
+      "versionCode": 2,
       "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
@@ -55,11 +60,27 @@
           "color": "#FF6B6B",
           "mode": "production"
         }
-      ]
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Cho phep ung dung truy cap camera de chup anh.",
+          "photosPermission": "Cho phep ung dung truy cap anh cua ban de tai len cong thuc va cap nhat ho so."
+        }
+      ],
+      "expo-secure-store",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fe18fb76-3e89-4879-bf76-6ab943fdf3df"
+      }
+    },
+    "owner": "ntdptit1"
   }
 }

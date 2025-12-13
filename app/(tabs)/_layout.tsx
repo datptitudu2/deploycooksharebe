@@ -1,7 +1,8 @@
 import { Tabs, useNavigation } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HapticTab } from '@/components/ui/haptic-tab';
 import { Colors } from '@/constants/theme';
@@ -12,6 +13,12 @@ export default function TabLayout() {
   const colors = Colors[colorScheme ?? 'light'];
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+  
+  // Ensure insets are valid numbers (fallback for Android)
+  const bottomInset = typeof insets?.bottom === 'number' && !isNaN(insets.bottom) 
+    ? insets.bottom 
+    : Platform.OS === 'android' ? 0 : 0;
 
   useEffect(() => {
     // Show loading when tab changes
@@ -34,7 +41,8 @@ export default function TabLayout() {
           backgroundColor: colorScheme === 'dark' ? '#1A1A2E' : '#FFFFFF',
           borderTopColor: colorScheme === 'dark' ? '#2A2A3E' : '#E5E5E5',
           paddingTop: 8,
-          height: 85,
+          paddingBottom: Platform.OS === 'android' ? Math.max(bottomInset, 8) : bottomInset,
+          height: Platform.OS === 'android' ? 85 + Math.max(bottomInset, 8) : 85 + bottomInset,
         },
         tabBarLabelStyle: {
           fontSize: 11,
