@@ -31,8 +31,8 @@
         "WRITE_EXTERNAL_STORAGE",
         "RECORD_AUDIO"
       ],
-      "package": "com.datptitudu.cookshare.new",
-      "versionCode": 1,
+      "package": "com.datptitudu.cookshare",
+      "versionCode": 2,
       "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
