@@ -157,6 +157,7 @@ class PushNotificationService {
           ...(Platform.OS === 'android' && { channelId: 'challenges' }),
         },
         trigger: {
+          type: 'calendar',
           hour: 8,
           minute: 0,
           repeats: true,
@@ -229,6 +230,7 @@ class PushNotificationService {
                     ...(Platform.OS === 'android' && { channelId: 'meals' }),
                   },
                   trigger: {
+                    type: 'date',
                     date: triggerDate,
                     repeats: false, // Không repeat vì mỗi ngày có meal plan riêng
                   } as any,
@@ -260,6 +262,7 @@ class PushNotificationService {
                     ...(Platform.OS === 'android' && { channelId: 'meals' }),
                   },
                   trigger: {
+                    type: 'date',
                     date: triggerDate,
                     repeats: false,
                   } as any,
@@ -291,6 +294,7 @@ class PushNotificationService {
                     ...(Platform.OS === 'android' && { channelId: 'meals' }),
                   },
                   trigger: {
+                    type: 'date',
                     date: triggerDate,
                     repeats: false,
                   } as any,
@@ -327,6 +331,7 @@ class PushNotificationService {
         ...(Platform.OS === 'android' && { channelId: 'meals' }),
       },
       trigger: {
+        type: 'calendar',
         hour: 7,
         minute: 0,
         repeats: true,
@@ -344,6 +349,7 @@ class PushNotificationService {
         ...(Platform.OS === 'android' && { channelId: 'meals' }),
       },
       trigger: {
+        type: 'calendar',
         hour: 11,
         minute: 30,
         repeats: true,
@@ -361,6 +367,7 @@ class PushNotificationService {
         ...(Platform.OS === 'android' && { channelId: 'meals' }),
       },
       trigger: {
+        type: 'calendar',
         hour: 17,
         minute: 30,
         repeats: true,
@@ -387,6 +394,7 @@ class PushNotificationService {
           ...(Platform.OS === 'android' && { channelId: 'meals' }),
         },
         trigger: {
+          type: 'calendar',
           hour: 9,
           minute: 0,
           repeats: true,
@@ -415,6 +423,7 @@ class PushNotificationService {
           ...(Platform.OS === 'android' && { channelId: 'default' }),
         },
         trigger: {
+          type: 'calendar',
           hour: 6,
           minute: 0,
           repeats: true,
