@@ -20,8 +20,8 @@ import Constants from 'expo-constants';
  */
 
 // Production API URL - ✅ ĐÃ CẬP NHẬT
-// Backend URL: https://cooksharebackend.onrender.com
-const PRODUCTION_API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://cooksharebackend.onrender.com/api';
+// Backend URL: https://deploycooksharebe.onrender.com
+const PRODUCTION_API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://deploycooksharebe.onrender.com/api';
 
 // Development IP - chỉ dùng khi test trên thiết bị thật (KHÔNG ảnh hưởng production)
 const YOUR_COMPUTER_IP = '192.168.1.126'; // ⬅️ IP của máy tính (Wi-Fi) - chỉ dùng trong development
