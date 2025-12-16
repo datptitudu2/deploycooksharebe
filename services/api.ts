@@ -30,7 +30,8 @@ export interface PaginatedResponse<T> {
 // Create axios instance
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
-  timeout: 15000,
+  // Render free tier can cold-start; give more time in production to avoid "Network Error"
+  timeout: __DEV__ ? 15000 : 40000,
   headers: {
     'Content-Type': 'application/json',
   },

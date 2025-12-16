@@ -239,7 +239,9 @@ export class Achievement {
    */
   static async unlockBadge(userId, badgeId) {
     const { db } = await connectToDatabase();
+    const { ObjectId } = await import('mongodb');
     
+    const userObjId = typeof userId === 'string' ? new ObjectId(userId) : userId;
     const achievements = await this.get(userId);
     const badges = achievements.badges || [];
 
@@ -251,7 +253,7 @@ export class Achievement {
     badges.push(badgeId);
 
     await db.collection(COLLECTION_NAME).updateOne(
-      { userId },
+      { userId: userObjId },
       {
         $set: {
           badges,
@@ -264,6 +266,46 @@ export class Achievement {
     await this.addPoints(userId, 50);
 
     return { badges };
+  }
+
+  /**
+   * Check và unlock badges liên quan đến streak
+   */
+  static async checkAndUnlockStreakBadges(userId, currentStreak) {
+    try {
+      if (currentStreak >= 7 && !(await this.hasBadge(userId, 'streak_7'))) {
+        await this.unlockBadge(userId, 'streak_7');
+      }
+      if (currentStreak >= 30 && !(await this.hasBadge(userId, 'streak_30'))) {
+        await this.unlockBadge(userId, 'streak_30');
+      }
+    } catch (error) {
+      console.error('Error checking streak badges:', error);
+    }
+  }
+
+  /**
+   * Check và unlock badges liên quan đến meals cooked
+   */
+  static async checkAndUnlockMealBadges(userId, totalMealsCooked) {
+    try {
+      if (totalMealsCooked >= 10 && !(await this.hasBadge(userId, 'cook_10'))) {
+        await this.unlockBadge(userId, 'cook_10');
+      }
+      if (totalMealsCooked >= 50 && !(await this.hasBadge(userId, 'cook_50'))) {
+        await this.unlockBadge(userId, 'cook_50');
+      }
+    } catch (error) {
+      console.error('Error checking meal badges:', error);
+    }
+  }
+
+  /**
+   * Kiểm tra user đã có badge chưa
+   */
+  static async hasBadge(userId, badgeId) {
+    const achievements = await this.get(userId);
+    return (achievements.badges || []).includes(badgeId);
   }
 
   /**
@@ -397,9 +439,12 @@ export class Achievement {
    */
   static async incrementMealCooked(userId, date = null, mealDetail = null) {
     const { db } = await connectToDatabase();
+    const { ObjectId } = await import('mongodb');
+    
+    const userObjId = typeof userId === 'string' ? new ObjectId(userId) : userId;
     
     await db.collection(COLLECTION_NAME).updateOne(
-      { userId },
+      { userId: userObjId },
       {
         $inc: { totalMealsCooked: 1 },
         $set: { updatedAt: new Date() },
@@ -407,18 +452,17 @@ export class Achievement {
       { upsert: true }
     );
 
-    // Update streak - chỉ tính nếu date là hôm nay hoặc hôm qua
+    // Update streak - luôn update nếu có date, không giới hạn chỉ hôm nay/hôm qua
     if (date) {
-      const mealDate = new Date(date);
+      // Parse date string (YYYY-MM-DD) thành Date object
+      const mealDate = new Date(date + 'T00:00:00.000Z'); // Dùng UTC để tránh timezone issues
       mealDate.setHours(0, 0, 0, 0);
+      
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const yesterday = new Date(today);
-      yesterday.setDate(yesterday.getDate() - 1);
+      const diffDays = Math.floor((today.getTime() - mealDate.getTime()) / (1000 * 60 * 60 * 24));
       
-      const diffDays = Math.floor((today - mealDate) / (1000 * 60 * 60 * 24));
-      
-      // Chỉ update streak nếu là hôm nay (0) hoặc hôm qua (1)
+      // Chỉ update streak nếu là hôm nay (0) hoặc hôm qua (1) - để tránh abuse
       if (diffDays === 0 || diffDays === 1) {
         await this.updateStreakForDate(userId, mealDate);
       }
@@ -437,6 +481,10 @@ export class Achievement {
     // Thưởng điểm
     await this.addPoints(userId, points);
     
+    // Check và unlock badges liên quan đến meals cooked
+    const achievements = await this.get(userId);
+    await this.checkAndUnlockMealBadges(userId, achievements.totalMealsCooked);
+    
     return { points };
   }
 
@@ -445,12 +493,16 @@ export class Achievement {
    */
   static async updateStreakForDate(userId, targetDate) {
     const { db } = await connectToDatabase();
+    const { ObjectId } = await import('mongodb');
     
+    const userObjId = typeof userId === 'string' ? new ObjectId(userId) : userId;
     const achievements = await this.get(userId);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    targetDate.setHours(0, 0, 0, 0);
+    // Đảm bảo targetDate là Date object
+    const mealDate = targetDate instanceof Date ? new Date(targetDate) : new Date(targetDate);
+    mealDate.setHours(0, 0, 0, 0);
 
     let currentStreak = achievements.currentStreak || 0;
     let longestStreak = achievements.longestStreak || 0;
@@ -460,23 +512,23 @@ export class Achievement {
 
     if (lastActiveDate) {
       lastActiveDate.setHours(0, 0, 0, 0);
-      const diffDays = Math.floor((targetDate - lastActiveDate) / (1000 * 60 * 60 * 24));
+      const diffDays = Math.floor((mealDate.getTime() - lastActiveDate.getTime()) / (1000 * 60 * 60 * 24));
 
       if (diffDays === 0) {
-        // Cùng ngày, không làm gì
+        // Cùng ngày, không làm gì (streak giữ nguyên)
         return { currentStreak, longestStreak };
       } else if (diffDays === 1) {
         // Ngày tiếp theo, tăng streak
         currentStreak++;
       } else if (diffDays > 1) {
-        // Gián đoạn, reset streak
+        // Gián đoạn, reset streak về 1
         currentStreak = 1;
       } else {
-        // Ngày quá khứ (diffDays < 0), không update streak
+        // Ngày quá khứ (diffDays < 0), không update streak (giữ nguyên)
         return { currentStreak, longestStreak };
       }
     } else {
-      // Lần đầu tiên
+      // Lần đầu tiên, bắt đầu streak = 1
       currentStreak = 1;
     }
 
@@ -485,20 +537,23 @@ export class Achievement {
       longestStreak = currentStreak;
     }
 
-    // Chỉ update lastActiveDate nếu targetDate >= lastActiveDate
-    const shouldUpdateLastActive = !lastActiveDate || targetDate >= lastActiveDate;
+    // Chỉ update lastActiveDate nếu mealDate >= lastActiveDate (hoặc chưa có lastActiveDate)
+    const shouldUpdateLastActive = !lastActiveDate || mealDate >= lastActiveDate;
 
     await db.collection(COLLECTION_NAME).updateOne(
-      { userId },
+      { userId: userObjId },
       {
         $set: {
           currentStreak,
           longestStreak,
-          ...(shouldUpdateLastActive && { lastActiveDate: targetDate }),
+          ...(shouldUpdateLastActive && { lastActiveDate: mealDate }),
           updatedAt: new Date(),
         },
       }
     );
+
+    // Check và unlock badges liên quan đến streak
+    await this.checkAndUnlockStreakBadges(userId, currentStreak);
 
     return { currentStreak, longestStreak };
   }
