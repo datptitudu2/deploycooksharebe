@@ -156,12 +156,18 @@ class PushNotificationService {
           sound: true,
           ...(Platform.OS === 'android' && { channelId: 'challenges' }),
         },
-        trigger: {
-          type: 'calendar',
-          hour: 8,
-          minute: 0,
-          repeats: true,
-        } as any,
+        trigger: Platform.OS === 'android'
+          ? {
+              type: 'daily',
+              hour: 8,
+              minute: 0,
+            } as any
+          : {
+              type: 'calendar',
+              hour: 8,
+              minute: 0,
+              repeats: true,
+            } as any,
       });
       console.log('✅ Scheduled daily challenge notification for 8:00 AM daily');
     } catch (error) {
@@ -330,12 +336,18 @@ class PushNotificationService {
         sound: true,
         ...(Platform.OS === 'android' && { channelId: 'meals' }),
       },
-      trigger: {
-        type: 'calendar',
-        hour: 7,
-        minute: 0,
-        repeats: true,
-      } as any,
+      trigger: Platform.OS === 'android'
+        ? {
+            type: 'daily',
+            hour: 7,
+            minute: 0,
+          } as any
+        : {
+            type: 'calendar',
+            hour: 7,
+            minute: 0,
+            repeats: true,
+          } as any,
     });
 
     // Nhắc nhở bữa trưa - 11:30
@@ -348,12 +360,18 @@ class PushNotificationService {
         sound: true,
         ...(Platform.OS === 'android' && { channelId: 'meals' }),
       },
-      trigger: {
-        type: 'calendar',
-        hour: 11,
-        minute: 30,
-        repeats: true,
-      } as any,
+      trigger: Platform.OS === 'android'
+        ? {
+            type: 'daily',
+            hour: 11,
+            minute: 30,
+          } as any
+        : {
+            type: 'calendar',
+            hour: 11,
+            minute: 30,
+            repeats: true,
+          } as any,
     });
 
     // Nhắc nhở bữa tối - 17:30
@@ -366,12 +384,18 @@ class PushNotificationService {
         sound: true,
         ...(Platform.OS === 'android' && { channelId: 'meals' }),
       },
-      trigger: {
-        type: 'calendar',
-        hour: 17,
-        minute: 30,
-        repeats: true,
-      } as any,
+      trigger: Platform.OS === 'android'
+        ? {
+            type: 'daily',
+            hour: 17,
+            minute: 30,
+          } as any
+        : {
+            type: 'calendar',
+            hour: 17,
+            minute: 30,
+            repeats: true,
+          } as any,
     });
   }
 
@@ -393,12 +417,18 @@ class PushNotificationService {
           sound: true,
           ...(Platform.OS === 'android' && { channelId: 'meals' }),
         },
-        trigger: {
-          type: 'calendar',
-          hour: 9,
-          minute: 0,
-          repeats: true,
-        } as any,
+        trigger: Platform.OS === 'android'
+          ? {
+              type: 'daily',
+              hour: 9,
+              minute: 0,
+            } as any
+          : {
+              type: 'calendar',
+              hour: 9,
+              minute: 0,
+              repeats: true,
+            } as any,
       });
     } catch (error) {
     }
@@ -422,12 +452,18 @@ class PushNotificationService {
           sound: true,
           ...(Platform.OS === 'android' && { channelId: 'default' }),
         },
-        trigger: {
-          type: 'calendar',
-          hour: 6,
-          minute: 0,
-          repeats: true,
-        } as any,
+        trigger: Platform.OS === 'android'
+          ? {
+              type: 'daily',
+              hour: 6,
+              minute: 0,
+            } as any
+          : {
+              type: 'calendar',
+              hour: 6,
+              minute: 0,
+              repeats: true,
+            } as any,
       });
       console.log('✅ Scheduled daily greeting for 6:00 AM daily');
     } catch (error) {
