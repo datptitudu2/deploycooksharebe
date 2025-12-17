@@ -27,13 +27,15 @@ git push origin main
    ```
    Name: cookbot-model-server
    Environment: Python 3
+   Python Version: 3.10  ← QUAN TRỌNG! (trong Environment Variables)
    Root Directory: backend/model_server  ← QUAN TRỌNG!
    Build Command: pip install -r requirements.txt
    Start Command: python app.py
    Plan: Free
    ```
 
-4. **Environment Variables (nếu cần):**
+4. **Environment Variables (QUAN TRỌNG):**
+   - `PYTHON_VERSION`: `3.10` ← PHẢI SET!
    - `HF_TOKEN`: Token Hugging Face (nếu model private)
    - `PORT`: Tự động set bởi Render
 

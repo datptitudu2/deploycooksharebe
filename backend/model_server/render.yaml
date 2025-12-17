@@ -10,6 +10,8 @@ services:
         value: 5000
       - key: PYTHON_VERSION
         value: 3.10
+      - key: PIP_VERSION
+        value: 24.0
     plan: free
     region: singapore
 
