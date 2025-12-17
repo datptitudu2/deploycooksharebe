@@ -4,6 +4,7 @@ import {
   addMeal,
   updateMeal,
   getWeekPlan,
+  startCookingTimer,
 } from '../controllers/mealPlanningController.js';
 import { authenticate } from '../middleware/auth.js';
 import { MealPlan } from '../models/MealPlan.js';
@@ -16,6 +17,7 @@ router.post('/generate-week', generateWeekPlan);
 router.post('/add', addMeal);
 router.put('/update', updateMeal);
 router.get('/week', getWeekPlan);
+router.post('/start-timer', startCookingTimer);
 router.delete('/delete', async (req, res) => {
   try {
     const userId = req.user?.userId;

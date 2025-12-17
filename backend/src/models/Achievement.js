@@ -349,13 +349,15 @@ export class Achievement {
   }
 
   /**
-   * Tính điểm cho meal cooked dựa trên meal detail
-   * @param {Object} mealDetail - Meal detail với difficulty, time, ingredients
+   * Tính điểm cho meal cooked dựa trên meal detail và timer
+   * @param {Object} mealDetail - Meal detail với difficulty, time, ingredients, cookingStartTime
    * @param {Object} achievements - User achievements để tính bonus level
-   * @returns {number} - Điểm được cộng
+   * @returns {Object} - { points, penalty, message }
    */
   static calculateMealCookedPoints(mealDetail = null, achievements = null) {
     let basePoints = 12; // Điểm cơ bản
+    let penalty = 0;
+    let message = '';
     
     // Nếu có mealDetail với thông tin chi tiết
     if (mealDetail) {
@@ -378,6 +380,39 @@ export class Achievement {
         const ingredientsBonus = Math.min(Math.floor(ingredientsCount / 2), 3); // Tối đa +3 điểm
         basePoints += ingredientsBonus;
       }
+
+      // **TÍNH PENALTY DỰA TRÊN TIMER (nếu có cookingStartTime và expectedTime)**
+      if (mealDetail.cookingStartTime && mealDetail.expectedTime) {
+        const startTime = new Date(mealDetail.cookingStartTime);
+        const now = new Date();
+        const actualMinutes = Math.floor((now - startTime) / (1000 * 60)); // Thời gian thực tế (phút)
+        const expectedMinutes = parseInt(mealDetail.expectedTime) || 0; // Thời gian dự kiến (phút)
+        const delay = actualMinutes - expectedMinutes; // Độ trễ (phút)
+
+        if (delay <= 5) {
+          // Nấu đúng giờ (trong vòng 5 phút): KHÔNG PENALTY
+          message = '⭐ Nấu đúng giờ! Full exp!';
+        } else if (delay > 5 && delay <= 15) {
+          // Trễ 5-15 phút: -2 exp
+          penalty = 2;
+          message = '⚠️ Trễ 5-15 phút (-2 exp)';
+        } else if (delay > 15 && delay <= 30) {
+          // Trễ 15-30 phút: -4 exp
+          penalty = 4;
+          message = '⚠️ Trễ 15-30 phút (-4 exp)';
+        } else if (delay > 30 && delay <= 60) {
+          // Trễ 30-60 phút: -6 exp
+          penalty = 6;
+          message = '⚠️ Trễ 30-60 phút (-6 exp)';
+        } else if (delay > 60) {
+          // Trễ >60 phút: -8 exp
+          penalty = 8;
+          message = '❌ Trễ >1 giờ (-8 exp)';
+        }
+      } else {
+        // Không bật timer: không penalty
+        message = 'Không dùng timer (full exp)';
+      }
     }
     
     // Bonus dựa trên level (level cao hơn có bonus nhỏ)
@@ -386,10 +421,15 @@ export class Achievement {
       levelBonus = Math.floor((achievements.level - 1) * 0.3); // Mỗi level thêm 0.3 điểm
     }
     
-    // Tính tổng điểm
-    const totalPoints = basePoints + levelBonus;
+    // Tính tổng điểm (trừ penalty, nhưng tối thiểu 4 điểm)
+    const totalPoints = Math.max(basePoints + levelBonus - penalty, 4);
     
-    return Math.max(totalPoints, 12); // Tối thiểu 12 điểm
+    return { 
+      points: totalPoints, 
+      penalty, 
+      message,
+      basePoints: basePoints + levelBonus, // Để hiển thị so sánh
+    };
   }
 
   /**
@@ -472,20 +512,20 @@ export class Achievement {
     }
 
     // Tính điểm động nếu có mealDetail, nếu không dùng điểm mặc định
-    let points = 12; // Điểm mặc định
+    let pointsResult = { points: 12, penalty: 0, message: '', basePoints: 12 };
     if (mealDetail) {
       const achievements = await this.get(userId);
-      points = this.calculateMealCookedPoints(mealDetail, achievements);
+      pointsResult = this.calculateMealCookedPoints(mealDetail, achievements);
     }
     
     // Thưởng điểm
-    await this.addPoints(userId, points);
+    await this.addPoints(userId, pointsResult.points);
     
     // Check và unlock badges liên quan đến meals cooked
     const achievements = await this.get(userId);
     await this.checkAndUnlockMealBadges(userId, achievements.totalMealsCooked);
     
-    return { points };
+    return pointsResult; // Trả về { points, penalty, message, basePoints }
   }
 
   /**

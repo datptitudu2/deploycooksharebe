@@ -9,9 +9,16 @@ const __dirname = dirname(__filename);
 
 dotenv.config({ path: join(__dirname, '../../.env') });
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization - chỉ khởi tạo khi cần dùng
+let openai = null;
+const getOpenAIClient = () => {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+};
 
 const MEAL_PLANNING_PROMPT = `Bạn là AI chuyên tư vấn lịch món ăn cho 1 tuần. 
 
@@ -77,7 +84,15 @@ export const generateWeekPlan = async (req, res) => {
       prompt += `\n\nYêu cầu đặc biệt: ${preferences}`;
     }
 
-    const completion = await openai.chat.completions.create({
+    const client = getOpenAIClient();
+    if (!client) {
+      return res.status(500).json({
+        success: false,
+        message: 'OpenAI API key chưa được cấu hình. Tính năng AI generate meal plan cần OpenAI API key.',
+      });
+    }
+
+    const completion = await client.chat.completions.create({
       model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       messages: [
         {
@@ -189,6 +204,8 @@ export const addMeal = async (req, res) => {
       updateData[`${mealType}Detail`] = {
         ...mealDetail,
         isCooked: mealDetail.isCooked !== undefined ? mealDetail.isCooked : false,
+        cookingStartTime: mealDetail.cookingStartTime || null, // Thời gian bắt đầu nấu
+        expectedTime: mealDetail.expectedTime || null, // Thời gian dự kiến (phút)
       };
     }
 
@@ -233,6 +250,8 @@ export const updateMeal = async (req, res) => {
         ...mealDetail,
         // Đảm bảo isCooked = false mặc định nếu chưa được set
         isCooked: mealDetail.isCooked !== undefined ? mealDetail.isCooked : false,
+        cookingStartTime: mealDetail.cookingStartTime || null, // Thời gian bắt đầu nấu
+        expectedTime: mealDetail.expectedTime || null, // Thời gian dự kiến (phút)
       },
     };
 
@@ -288,6 +307,66 @@ export const getWeekPlan = async (req, res) => {
     });
   } catch (error) {
     console.error('Get week plan error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Có lỗi xảy ra',
+    });
+  }
+};
+
+/**
+ * Start cooking timer
+ */
+export const startCookingTimer = async (req, res) => {
+  try {
+    const userId = req.user?.userId;
+    const { date, mealType, expectedTime } = req.body;
+
+    if (!date || !mealType || !expectedTime) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng điền đầy đủ thông tin',
+      });
+    }
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Vui lòng đăng nhập',
+      });
+    }
+
+    // Get current meal plan
+    const plans = await MealPlan.findByUserId(userId);
+    const currentPlan = plans.find(p => p.date === date);
+    
+    if (!currentPlan) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy lịch ăn',
+      });
+    }
+
+    const mealDetail = currentPlan[`${mealType}Detail`] || {};
+    
+    // Update with cooking start time
+    const updateData = {
+      [`${mealType}Detail`]: {
+        ...mealDetail,
+        cookingStartTime: new Date().toISOString(),
+        expectedTime: parseInt(expectedTime),
+      },
+    };
+
+    await MealPlan.update(userId, date, updateData);
+
+    res.json({
+      success: true,
+      message: 'Đã bắt đầu timer nấu ăn',
+      cookingStartTime: updateData[`${mealType}Detail`].cookingStartTime,
+    });
+  } catch (error) {
+    console.error('Start cooking timer error:', error);
     res.status(500).json({
       success: false,
       message: error.message || 'Có lỗi xảy ra',

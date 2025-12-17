@@ -31,6 +31,7 @@ import { StreakBreakAnimation } from '@/components/common/StreakBreakAnimation';
 import { CustomAlert } from '@/components/common/CustomAlert';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { pushNotificationService } from '@/services/pushNotificationService';
+import { CookingTimer } from '@/components/cooking';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -44,6 +45,8 @@ interface MealDetail {
   image?: string;         // Hình ảnh món ăn
   isCooked?: boolean;      // Đã nấu chưa
   cookedAt?: string;      // Thời gian nấu
+  cookingStartTime?: string | null; // Thời gian bắt đầu nấu (for timer)
+  expectedTime?: number | null; // Thời gian dự kiến nấu (phút)
 }
 
 interface MealPlan {
@@ -143,6 +146,10 @@ export default function MealPlanningScreen() {
   const [generateDays, setGenerateDays] = useState(7);
   const [selectedRegion, setSelectedRegion] = useState<string>('vietnam-north'); // Mặc định miền Bắc
   const [isFromRecipe, setIsFromRecipe] = useState(false); // Flag để biết data đến từ recipe
+  const [showTimerModal, setShowTimerModal] = useState(false);
+  const [timerMealType, setTimerMealType] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('lunch');
+  const [timerMealName, setTimerMealName] = useState('');
+  const [timerMealDetail, setTimerMealDetail] = useState<MealDetail | null>(null);
   
   const scrollY = useRef(new Animated.Value(0)).current;
   const fabScale = useRef(new Animated.Value(1)).current;
@@ -480,6 +487,37 @@ export default function MealPlanningScreen() {
           }}
         />
         
+        <CookingTimer
+          visible={showTimerModal}
+          onClose={() => setShowTimerModal(false)}
+          onStart={async (expectedMinutes) => {
+            try {
+              const dateStr = selectedDate.toISOString().split('T')[0];
+              const response = await axios.post(
+                `${API_URL}/meal-planning/start-timer`,
+                {
+                  date: dateStr,
+                  mealType: timerMealType,
+                  expectedTime: expectedMinutes,
+                },
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                }
+              );
+              
+              if (response.data.success) {
+                alertService.success('Đã bắt đầu timer! Nấu đúng giờ để nhận full exp nhé!');
+                loadMealPlans(); // Reload to get updated cookingStartTime
+              }
+            } catch (error: any) {
+              alertService.error(error.response?.data?.message || 'Không thể bắt đầu timer');
+            }
+          }}
+          mealName={timerMealName}
+          cookingStartTime={timerMealDetail?.cookingStartTime}
+          expectedTime={timerMealDetail?.expectedTime}
+        />
+        
         <CustomAlert
           visible={showCustomAlert}
           title={alertData?.title || '🎉 Chúc mừng!'}
@@ -748,47 +786,72 @@ export default function MealPlanningScreen() {
                         </View>
                       )}
                       {canMarkAsCooked && (
-                        <TouchableOpacity
-                          style={[styles.markCookedBtn, { backgroundColor: theme.accent + '20' }]}
-                          onPress={async (e) => {
-                            e.stopPropagation();
-                            try {
-                              const dateStr = selectedDate.toISOString().split('T')[0];
-                              const response = await achievementService.markMealAsCooked(dateStr, type);
-                              if (response.success) {
-                                // Reload meal plans
-                                loadMealPlans();
-                                
-                                if (response.leveledUp) {
-                                  // Hiển thị animation break chuỗi lửa
-                                  setNewLevel(response.newLevel || 1);
-                                  setShowLevelUpAnimation(true);
+                        <View style={{ flexDirection: 'row', gap: 6, marginTop: 6 }}>
+                          <TouchableOpacity
+                            style={[styles.markCookedBtn, { backgroundColor: '#FFB84D' + '20', flex: 1 }]}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              setTimerMealType(type);
+                              setTimerMealName(mealName);
+                              setTimerMealDetail(actualMealDetail || null);
+                              setShowTimerModal(true);
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            <Ionicons name="timer-outline" size={14} color="#FFB84D" />
+                            <ThemedText style={[styles.markCookedBtnText, { color: '#FFB84D' }]}>
+                              Timer
+                            </ThemedText>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={[styles.markCookedBtn, { backgroundColor: theme.accent + '20', flex: 1 }]}
+                            onPress={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                const dateStr = selectedDate.toISOString().split('T')[0];
+                                const response = await achievementService.markMealAsCooked(dateStr, type);
+                                if (response.success) {
+                                  // Reload meal plans
+                                  loadMealPlans();
                                   
-                                  // Hiển thị custom alert ngay sau khi animation kết thúc
-                                  setTimeout(() => {
-                                    setShowLevelUpAnimation(false); // Ẩn animation
-                                    const message = `Bạn đã lên Level ${response.newLevel}!${response.reward?.points ? `\n\n+${response.reward.points} điểm thưởng` : ''}${response.reward?.badge ? `\n\n🏆 Unlock badge mới!` : ''}`;
-                                    setAlertData({
-                                      title: '🎉 Chúc mừng!',
-                                      message: message,
-                                    });
-                                    setShowCustomAlert(true);
-                                  }, 12000); // Sau ~12 giây animation
+                                  if (response.leveledUp) {
+                                    // Hiển thị animation break chuỗi lửa
+                                    setNewLevel(response.newLevel || 1);
+                                    setShowLevelUpAnimation(true);
+                                    
+                                    // Hiển thị custom alert ngay sau khi animation kết thúc
+                                    setTimeout(() => {
+                                      setShowLevelUpAnimation(false); // Ẩn animation
+                                      const message = `Bạn đã lên Level ${response.newLevel}!${response.reward?.points ? `\n\n+${response.reward.points} điểm thưởng` : ''}${response.reward?.badge ? `\n\n🏆 Unlock badge mới!` : ''}`;
+                                      setAlertData({
+                                        title: '🎉 Chúc mừng!',
+                                        message: message,
+                                      });
+                                      setShowCustomAlert(true);
+                                    }, 12000); // Sau ~12 giây animation
                                 } else {
-                                  alertService.success(`Đã đánh dấu món đã nấu! +${response.points || 12} điểm`);
+                                  // Hiển thị message từ backend (có thể có penalty info)
+                                  const pointsEarned = response.pointsEarned ?? response.points ?? 12;
+                                  const message = response.message || `Đã đánh dấu món đã nấu! +${pointsEarned} điểm`;
+                                  if (response.penalty && response.penalty > 0) {
+                                    alertService.warning(message);
+                                  } else {
+                                    alertService.success(message);
+                                  }
                                 }
+                                }
+                              } catch (error: any) {
+                                alertService.error(error.response?.data?.message || 'Không thể đánh dấu món đã nấu');
                               }
-                            } catch (error: any) {
-                              alertService.error(error.response?.data?.message || 'Không thể đánh dấu món đã nấu');
-                            }
-                          }}
-                          activeOpacity={0.7}
-                        >
-                          <Ionicons name="checkmark-circle-outline" size={14} color={theme.accent} />
-                          <ThemedText style={[styles.markCookedBtnText, { color: theme.accent }]}>
-                            Đã nấu
-                          </ThemedText>
-                        </TouchableOpacity>
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            <Ionicons name="checkmark-circle-outline" size={14} color={theme.accent} />
+                            <ThemedText style={[styles.markCookedBtnText, { color: theme.accent }]}>
+                              Đã nấu
+                            </ThemedText>
+                          </TouchableOpacity>
+                        </View>
                       )}
                       {actualMealDetail?.isCooked && (
                         <View style={[styles.markCookedBtn, { backgroundColor: '#34C759' }]}>

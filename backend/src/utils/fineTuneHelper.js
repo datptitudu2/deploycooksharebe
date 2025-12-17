@@ -9,9 +9,16 @@ const __dirname = dirname(__filename);
 
 dotenv.config({ path: join(__dirname, '../../.env') });
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization - chỉ khởi tạo khi cần dùng
+let openai = null;
+const getOpenAIClient = () => {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+};
 
 /**
  * Tạo training data cho fine-tuning
@@ -184,7 +191,11 @@ export const createTrainingFile = async () => {
  */
 export const uploadTrainingFile = async (filePath) => {
   try {
-    const file = await openai.files.create({
+    const client = getOpenAIClient();
+    if (!client) {
+      throw new Error('OpenAI API key chưa được cấu hình');
+    }
+    const file = await client.files.create({
       file: fs.createReadStream(filePath),
       purpose: 'fine-tune',
     });
@@ -202,7 +213,11 @@ export const uploadTrainingFile = async (filePath) => {
  */
 export const createFineTuneJob = async (fileId, model = 'gpt-3.5-turbo') => {
   try {
-    const fineTune = await openai.fineTuning.jobs.create({
+    const client = getOpenAIClient();
+    if (!client) {
+      throw new Error('OpenAI API key chưa được cấu hình');
+    }
+    const fineTune = await client.fineTuning.jobs.create({
       training_file: fileId,
       model: model,
       suffix: 'cookshare-chatbot', // Tên model sau khi fine-tune
@@ -221,7 +236,11 @@ export const createFineTuneJob = async (fileId, model = 'gpt-3.5-turbo') => {
  */
 export const checkFineTuneStatus = async (jobId) => {
   try {
-    const job = await openai.fineTuning.jobs.retrieve(jobId);
+    const client = getOpenAIClient();
+    if (!client) {
+      throw new Error('OpenAI API key chưa được cấu hình');
+    }
+    const job = await client.fineTuning.jobs.retrieve(jobId);
     return job;
   } catch (error) {
     console.error('❌ Check status error:', error);

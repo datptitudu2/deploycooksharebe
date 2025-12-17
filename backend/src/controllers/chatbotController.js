@@ -10,10 +10,16 @@ const __dirname = dirname(__filename);
 
 dotenv.config({ path: join(__dirname, '../../.env') });
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization - chỉ khởi tạo khi cần dùng
+let openai = null;
+const getOpenAIClient = () => {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+};
 
 // System prompt cho AI tư vấn món ăn
 const SYSTEM_PROMPT = `Bạn là một AI tư vấn món ăn thân thiện và dí dỏm tên là CookBot của ứng dụng CookShare. 
@@ -116,7 +122,14 @@ export const sendMessage = async (req, res) => {
     }
 
     // Gọi OpenAI API
-    const completion = await openai.chat.completions.create({
+    const client = getOpenAIClient();
+    if (!client) {
+      return res.status(500).json({
+        success: false,
+        message: 'OpenAI API key chưa được cấu hình',
+      });
+    }
+    const completion = await client.chat.completions.create({
       model: currentModel,
       messages: [
         {
@@ -260,7 +273,14 @@ export const sendMessageWithImage = async (req, res) => {
     const isFineTuned = currentModel.startsWith('ft:');
 
     // Gọi OpenAI Vision API
-    const completion = await openai.chat.completions.create({
+    const client = getOpenAIClient();
+    if (!client) {
+      return res.status(500).json({
+        success: false,
+        message: 'OpenAI API key chưa được cấu hình',
+      });
+    }
+    const completion = await client.chat.completions.create({
       model: visionModel,
       messages: messages,
       temperature: 0.8,
@@ -394,6 +414,29 @@ export const clearHistory = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Có lỗi xảy ra khi xóa lịch sử chat',
+    });
+  }
+};
+
+/**
+ * Check API key status
+ */
+export const checkApiKey = async (req, res) => {
+  try {
+    const hasKey = !!process.env.OPENAI_API_KEY;
+    const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+    
+    res.json({
+      success: true,
+      valid: hasKey,
+      model: model,
+      type: 'openai',
+      message: hasKey ? 'OpenAI API đang hoạt động!' : 'Chưa cấu hình API key',
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi kiểm tra API',
     });
   }
 };

@@ -146,19 +146,22 @@ export const markMealAsCooked = async (req, res) => {
     const wasNewlyMarked = await MealPlan.markMealAsCooked(userId, date, mealType);
 
     if (wasNewlyMarked) {
-      // Lấy mealDetail để tính điểm động
+      // Lấy mealDetail để tính điểm động (lấy từ mealTypeDetail để có đầy đủ thông tin timer)
       const mealPlan = await MealPlan.findByDate(userId, date);
-      const mealDetail = mealPlan?.[mealType];
+      const mealDetailKey = `${mealType}Detail`;
+      const mealDetail = mealPlan?.[mealDetailKey] || mealPlan?.[mealType];
       
       // Lấy achievements trước khi cộng điểm để check level up
       const achievementsBefore = await Achievement.get(userId);
       const oldLevel = achievementsBefore.level || 1;
       const oldPoints = achievementsBefore.points || 0;
       
-      // Tính điểm sẽ được cộng
-      const pointsEarned = mealDetail 
+      // Tính điểm sẽ được cộng (trả về object { points, penalty, message, basePoints })
+      const pointsResult = mealDetail 
         ? Achievement.calculateMealCookedPoints(mealDetail, achievementsBefore)
-        : 12;
+        : { points: 12, penalty: 0, message: '', basePoints: 12 };
+      
+      const pointsEarned = pointsResult.points || 12;
       
       // Tính level mới sau khi cộng điểm
       const newPoints = oldPoints + pointsEarned;
@@ -187,12 +190,14 @@ export const markMealAsCooked = async (req, res) => {
       
       res.json({
         success: true,
-        message: `Đã đánh dấu món đã nấu! +${pointsEarned} điểm`,
+        message: pointsResult.message || `Đã đánh dấu món đã nấu! +${pointsEarned} điểm`,
         leveledUp: leveledUp,
         reward: reward,
         newLevel: newLevel,
         points: achievementsAfter.points,
         pointsEarned: pointsEarned,
+        penalty: pointsResult.penalty || 0,
+        basePoints: pointsResult.basePoints || pointsEarned,
       });
     } else {
       res.json({

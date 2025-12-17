@@ -32,6 +32,8 @@ export interface MarkMealCookedResponse {
   reward: LevelUpReward | null;
   newLevel: number;
   points: number;
+  pointsEarned?: number; // Điểm nhận được khi đánh dấu món đã nấu
+  penalty?: number; // Penalty nếu nấu trễ
 }
 
 export const achievementService = {

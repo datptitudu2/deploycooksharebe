@@ -1,0 +1,242 @@
+erDiagram
+    User {
+        string _id PK
+        string email UK
+        string password
+        string name
+        string avatar
+        string bio
+        string createdAt
+        string updatedAt
+    }
+    
+    Recipe {
+        string _id PK
+        string authorId FK
+        string authorName
+        string authorAvatar
+        string name
+        string description
+        string category
+        string mealType
+        string cuisine
+        int prepTime
+        int cookTime
+        int servings
+        string difficulty
+        string ingredients
+        string instructions
+        string image
+        string images
+        string videos
+        string tags
+        int viewCount
+        int likeCount
+        int saveCount
+        int ratingCount
+        float averageRating
+        int isPublic
+        string createdAt
+        string updatedAt
+    }
+    
+    MealPlan {
+        string _id PK
+        string userId FK
+        string date
+        string breakfast
+        string breakfastDetail
+        string lunch
+        string lunchDetail
+        string dinner
+        string dinnerDetail
+        string snack
+        string snackDetail
+        string createdAt
+        string updatedAt
+    }
+    
+    Achievement {
+        string _id PK
+        string userId FK
+        int currentStreak
+        int longestStreak
+        string lastActiveDate
+        int totalMealsCooked
+        int totalRecipesCreated
+        int totalRecipesShared
+        int totalLikesReceived
+        int totalRatingsReceived
+        int totalFollowers
+        int totalFollowing
+        string badges
+        int level
+        int points
+        string createdAt
+        string updatedAt
+    }
+    
+    Story {
+        string _id PK
+        string userId FK
+        string userName
+        string userAvatar
+        string type
+        string content
+        string thumbnail
+        string caption
+        string tipTitle
+        string tipContent
+        int duration
+        string views
+        string likes
+        int viewCount
+        int likeCount
+        string expiresAt
+        string createdAt
+    }
+    
+    Challenge {
+        string _id PK
+        string title
+        string description
+        string icon
+        string category
+        int points
+        string difficulty
+        string date
+        string expiresAt
+        int participantCount
+        int completedCount
+        string createdAt
+    }
+    
+    Message {
+        string _id PK
+        string senderId FK
+        string receiverId FK
+        string content
+        string type
+        string imageUrl
+        string voiceUrl
+        int voiceDuration
+        string replyTo FK
+        string reactions
+        int read
+        string createdAt
+        string updatedAt
+    }
+    
+    Notification {
+        string _id PK
+        string recipientId FK
+        string actorId FK
+        string type
+        string actorName
+        string actorAvatar
+        string recipeId FK
+        string recipeName
+        string recipeImage
+        string commentId FK
+        string commentText
+        int rating
+        string tipId FK
+        string tipTitle
+        string tipContent
+        int read
+        string createdAt
+    }
+    
+    ChatbotHistory {
+        string _id PK
+        string userId FK
+        string role
+        string content
+        string image
+        string videoInfo
+        string mealName
+        string timestamp
+        string createdAt
+    }
+    
+    UserFollows {
+        string _id PK
+        string followerId FK
+        string followingId FK
+        string createdAt
+    }
+    
+    RecipeLikes {
+        string _id PK
+        string userId FK
+        string recipeId FK
+        string createdAt
+    }
+    
+    RecipeSaves {
+        string _id PK
+        string userId FK
+        string recipeId FK
+        string createdAt
+    }
+    
+    RecipeComments {
+        string _id PK
+        string recipeId FK
+        string userId FK
+        string userName
+        string userAvatar
+        string content
+        int rating
+        string parentId FK
+        string replies
+        string createdAt
+        string updatedAt
+    }
+    
+    RecipeRatings {
+        string _id PK
+        string recipeId FK
+        string userId FK
+        int rating
+        string createdAt
+    }
+    
+    UserChallenges {
+        string _id PK
+        string userId FK
+        string challengeId FK
+        int joined
+        string joinedAt
+        int completed
+        string completedAt
+        string proofRecipeId FK
+        string proofImageUrl
+    }
+    
+    User ||--o{ Recipe : "creates"
+    User ||--o{ MealPlan : "has"
+    User ||--o{ Achievement : "has"
+    User ||--o{ Story : "creates"
+    User ||--o{ Message : "sends"
+    User ||--o{ Message : "receives"
+    User ||--o{ Notification : "receives"
+    User ||--o{ Notification : "triggers"
+    User ||--o{ ChatbotHistory : "has"
+    User ||--o{ UserFollows : "follows"
+    User ||--o{ UserFollows : "followed_by"
+    Recipe ||--o{ RecipeLikes : "liked_by"
+    Recipe ||--o{ RecipeSaves : "saved_by"
+    Recipe ||--o{ RecipeComments : "has"
+    Recipe ||--o{ RecipeRatings : "rated_by"
+    Recipe ||--o{ Notification : "mentioned_in"
+    User ||--o{ RecipeLikes : "likes"
+    User ||--o{ RecipeSaves : "saves"
+    User ||--o{ RecipeComments : "comments"
+    User ||--o{ RecipeRatings : "rates"
+    Challenge ||--o{ UserChallenges : "participated_by"
+    User ||--o{ UserChallenges : "participates"
+    Recipe ||--o{ UserChallenges : "proof"
+    Message ||--o| Message : "replies_to"
+    RecipeComments ||--o| RecipeComments : "replies_to"
+
