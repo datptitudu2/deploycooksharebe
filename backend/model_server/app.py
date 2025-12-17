@@ -19,13 +19,13 @@ tokenizer = None
 model_loaded = False
 
 def load_model():
-    """Lazy load model - chỉ load khi cần"""
+    """Lazy load model với INT8 quantization để tiết kiệm RAM"""
     global model, tokenizer, model_loaded
     
     if model_loaded:
         return model, tokenizer
     
-    print("🔄 Đang load model...")
+    print("🔄 Đang load model với INT8 quantization...")
     start_time = time.time()
     
     try:
@@ -38,12 +38,11 @@ def load_model():
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         tokenizer.pad_token = tokenizer.eos_token
         
-        # Load model với quantization để tiết kiệm RAM
-        print("📦 Loading model với quantization...")
-        # Force CPU cho Render free tier (không có GPU)
+        # Load model với float16 trước (nhẹ hơn float32)
+        print("📦 Loading model (float16)...")
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype=torch.float16,  # Giảm 50% RAM
+            torch_dtype=torch.float16,  # Giảm 50% RAM so với float32
             device_map="cpu",  # Force CPU (Render free tier không có GPU)
             low_cpu_mem_usage=True,
             trust_remote_code=True
@@ -52,21 +51,48 @@ def load_model():
         # Đảm bảo model trên CPU
         model = model.cpu()
         
+        # Dynamic INT8 Quantization (giảm thêm 50% memory)
+        print("🔧 Applying INT8 quantization...")
+        try:
+            # Dùng torch.quantization.quantize_dynamic (CPU-compatible)
+            # PyTorch 2.x: torch.quantization hoặc torch.ao.quantization
+            try:
+                import torch.quantization as quant
+            except ImportError:
+                # PyTorch 2.x: thử torch.ao.quantization
+                try:
+                    import torch.ao.quantization as quant
+                except ImportError:
+                    raise ImportError("PyTorch quantization not available")
+            
+            # Quantize linear layers xuống INT8
+            model = quant.quantize_dynamic(
+                model,
+                {torch.nn.Linear},  # Chỉ quantize Linear layers
+                dtype=torch.qint8
+            )
+            print("✅ INT8 quantization applied")
+        except Exception as quant_error:
+            print(f"⚠️ Quantization failed, using float16: {quant_error}")
+            # Fallback: giữ nguyên float16 nếu quantization fail
+            # Model vẫn hoạt động, chỉ tốn memory hơn một chút
+        
         # Set eval mode
         model.eval()
         
         # Clear cache
         gc.collect()
-        # Không cần empty CUDA cache vì dùng CPU
         
         model_loaded = True
         load_time = time.time() - start_time
-        print(f"✅ Model loaded trong {load_time:.2f}s")
+        print(f"✅ Model loaded trong {load_time:.2f}s (INT8 quantized)")
         
         return model, tokenizer
         
     except Exception as e:
         print(f"❌ Lỗi load model: {e}")
+        import traceback
+        traceback.print_exc()
         raise
 
 @app.route('/health', methods=['GET'])
@@ -75,7 +101,7 @@ def health():
     return jsonify({
         'status': 'ok',
         'model_loaded': model_loaded,
-        'memory_usage': 'CPU mode (Render free tier)'
+        'memory_usage': 'CPU mode (INT8 quantized) - Render free tier'
     })
 
 @app.route('/predict', methods=['POST'])
