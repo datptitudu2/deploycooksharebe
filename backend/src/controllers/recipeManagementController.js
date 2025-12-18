@@ -155,6 +155,9 @@ export const createRecipe = async (req, res) => {
     const result = await Achievement.incrementRecipeCreated(userId, recipeData);
     const pointsEarned = result?.points || 20;
     
+    // Cập nhật streak khi đăng công thức (hoạt động nấu ăn)
+    await Achievement.updateStreak(userId);
+    
     // Lấy achievements sau khi cộng điểm để check level up
     const achievementsAfter = await Achievement.get(userId);
     const newLevel = achievementsAfter.level || 1;
@@ -185,6 +188,9 @@ export const createRecipe = async (req, res) => {
       recipeImage
     );
 
+    // Lấy streak sau khi update
+    const streakInfo = await Achievement.get(userId);
+    
     res.status(HTTP_STATUS.CREATED).json({
       success: true,
       message: 'Tạo công thức thành công',
@@ -194,6 +200,10 @@ export const createRecipe = async (req, res) => {
       newLevel: newLevel,
       points: achievementsAfter.points,
       pointsEarned: pointsEarned,
+      streak: {
+        currentStreak: streakInfo.currentStreak || 0,
+        longestStreak: streakInfo.longestStreak || 0,
+      },
     });
   } catch (error) {
     console.error('Create recipe error:', error);

@@ -27,7 +27,7 @@ import { API_URL } from '@/config/api';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
-import { userService, achievementService, notificationService, Notification } from '@/services';
+import { userService, achievementService, notificationService, Notification, recipeService, Recipe } from '@/services';
 import { alertService } from '@/services/alertService';
 
 // Helper function to format time ago
@@ -126,14 +126,13 @@ function ProfileScreenContent() {
   const [chefs, setChefs] = useState<any[]>([]);
   const [loadingChefs, setLoadingChefs] = useState(false);
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
-  const [notificationsTab, setNotificationsTab] = useState<'notifications' | 'followers' | 'following'>('notifications');
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notificationsTab, setNotificationsTab] = useState<'favorites' | 'followers' | 'following'>('favorites');
+  const [favoriteRecipes, setFavoriteRecipes] = useState<Recipe[]>([]);
   const [followers, setFollowers] = useState<any[]>([]);
   const [following, setFollowing] = useState<any[]>([]);
-  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
   const [loadingFollow, setLoadingFollow] = useState(false);
   const [followStatuses, setFollowStatuses] = useState<Record<string, boolean>>({});
-  const [unreadCount, setUnreadCount] = useState(0);
   const [showAchievementsModal, setShowAchievementsModal] = useState(false);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
@@ -193,18 +192,10 @@ function ProfileScreenContent() {
     }
   }, [showChefListModal]);
 
-  // Auto-refresh notifications khi modal mở (real-time updates)
+  // Load favorite recipes khi modal mở
   useEffect(() => {
-    if (showNotificationsModal && notificationsTab === 'notifications') {
-      // Load ngay khi mở
-      loadNotifications();
-      
-      // Polling mỗi 5 giây để cập nhật real-time
-      const interval = setInterval(() => {
-        loadNotifications();
-      }, 5000);
-      
-      return () => clearInterval(interval);
+    if (showNotificationsModal && notificationsTab === 'favorites') {
+      loadFavoriteRecipes();
     }
   }, [showNotificationsModal, notificationsTab, user]);
 
@@ -223,40 +214,23 @@ function ProfileScreenContent() {
     }
   };
 
-  const loadNotifications = async () => {
-    if (!user) return;
+  const loadFavoriteRecipes = async () => {
+    if (!user || !token) return;
     try {
-      setLoadingNotifications(true);
-      const [notificationsRes, unreadRes] = await Promise.all([
-        notificationService.getNotifications({ limit: 50 }),
-        notificationService.getUnreadCount(),
-      ]);
-      if (notificationsRes.success && notificationsRes.data) {
-        setNotifications(notificationsRes.data);
-      }
-      if (unreadRes.success && unreadRes.data) {
-        setUnreadCount(unreadRes.data.count);
+      setLoadingFavorites(true);
+      const response = await recipeService.getSaved();
+      if (response.success && response.data) {
+        setFavoriteRecipes(response.data || []);
+      } else {
+        setFavoriteRecipes([]);
       }
     } catch (error: any) {
+      console.error('Load favorite recipes error:', error);
+      setFavoriteRecipes([]);
     } finally {
-      setLoadingNotifications(false);
+      setLoadingFavorites(false);
     }
   };
-
-  // Auto-refresh notifications khi modal mở
-  useEffect(() => {
-    if (showNotificationsModal && notificationsTab === 'notifications') {
-      // Load ngay khi mở
-      loadNotifications();
-      
-      // Polling mỗi 5 giây để cập nhật real-time
-      const interval = setInterval(() => {
-        loadNotifications();
-      }, 5000);
-      
-      return () => clearInterval(interval);
-    }
-  }, [showNotificationsModal, notificationsTab, user]);
 
   const loadFollowData = async () => {
     setLoadingFollow(true);
@@ -809,17 +783,17 @@ function ProfileScreenContent() {
             style={[styles.actionButton, { backgroundColor: theme.card }]}
             onPress={() => {
               setShowNotificationsModal(true);
-              setNotificationsTab('notifications');
-              loadNotifications();
+              setNotificationsTab('favorites');
+              loadFavoriteRecipes();
               loadFollowData();
             }}
           >
             <View style={[styles.actionIcon, { backgroundColor: '#FF6B35' }]}>
-              <Ionicons name="notifications-outline" size={24} color="#FFFFFF" />
+              <Ionicons name="heart" size={24} color="#FFFFFF" />
             </View>
             <View style={styles.actionContent}>
               <ThemedText style={[styles.actionTitle, { color: theme.text }]}>
-                Thông báo
+                Món ăn đã yêu thích
               </ThemedText>
               <ThemedText style={[styles.actionDesc, { color: theme.textSecondary }]}>
                 {profile?.followersCount || 0} người theo dõi{' • '}{profile?.followingCount || 0} đang theo dõi
@@ -922,24 +896,11 @@ function ProfileScreenContent() {
           <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
             <View style={styles.modalHeader}>
               <ThemedText style={[styles.modalTitle, { color: theme.text }]}>
-                Thông báo
+                Món ăn đã yêu thích
               </ThemedText>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-                {notificationsTab === 'notifications' && unreadCount > 0 && (
-                  <TouchableOpacity onPress={async () => {
-                    await notificationService.markAllAsRead();
-                    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-                    setUnreadCount(0);
-                  }}>
-                    <ThemedText style={[styles.markAllRead, { color: colors.primary }]}>
-                      Đánh dấu tất cả
-                    </ThemedText>
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity onPress={() => setShowNotificationsModal(false)}>
-                  <Ionicons name="close" size={24} color={theme.text} />
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity onPress={() => setShowNotificationsModal(false)}>
+                <Ionicons name="close" size={24} color={theme.text} />
+              </TouchableOpacity>
             </View>
 
             {/* Tabs */}
@@ -947,21 +908,21 @@ function ProfileScreenContent() {
               <TouchableOpacity
                 style={[
                   styles.followTab,
-                  notificationsTab === 'notifications' && styles.followTabActive,
-                  notificationsTab === 'notifications' && { borderBottomColor: colors.primary },
+                  notificationsTab === 'favorites' && styles.followTabActive,
+                  notificationsTab === 'favorites' && { borderBottomColor: colors.primary },
                 ]}
                 onPress={() => {
-                  setNotificationsTab('notifications');
-                  loadNotifications();
+                  setNotificationsTab('favorites');
+                  loadFavoriteRecipes();
                 }}
               >
                 <ThemedText
                   style={[
                     styles.followTabText,
-                    { color: notificationsTab === 'notifications' ? colors.primary : theme.textSecondary },
+                    { color: notificationsTab === 'favorites' ? colors.primary : theme.textSecondary },
                   ]}
                 >
-                  Thông báo{unreadCount > 0 && ` (${unreadCount})`}
+                  Món ăn đã yêu thích ({favoriteRecipes.length})
                 </ThemedText>
               </TouchableOpacity>
               <TouchableOpacity
@@ -1007,87 +968,63 @@ function ProfileScreenContent() {
             </View>
 
             {/* Content */}
-            {notificationsTab === 'notifications' ? (
-              loadingNotifications ? (
+            {notificationsTab === 'favorites' ? (
+              loadingFavorites ? (
                 <View style={styles.followLoading}>
                   <ActivityIndicator size="large" color={colors.primary} />
                 </View>
               ) : (
                 <FlatList
-                  data={notifications}
+                  data={favoriteRecipes}
                   keyExtractor={(item) => item._id}
                   style={styles.followContent}
                   contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+                  numColumns={2}
+                  columnWrapperStyle={{ paddingHorizontal: 12, gap: 12 }}
                   renderItem={({ item }) => {
-                    const timeAgo = formatTimeAgo(item.createdAt);
-                    const getNotificationIcon = (type: string) => {
-                      switch (type) {
-                        case 'comment': return 'chatbubble-outline';
-                        case 'rating': return 'star-outline';
-                        case 'like': return 'heart';
-                        case 'follow': return 'person-add-outline';
-                        case 'reply': return 'arrow-undo-outline';
-                        case 'new_recipe': return 'restaurant-outline';
-                        default: return 'notifications-outline';
-                      }
-                    };
-                    const getNotificationMessage = (notification: Notification) => {
-                      switch (notification.type) {
-                        case 'comment': return `${notification.actorName} đã bình luận về công thức "${notification.recipeName}"`;
-                        case 'rating': return `${notification.actorName} đã đánh giá ${notification.rating} sao cho "${notification.recipeName}"`;
-                        case 'like': return `${notification.actorName} đã thích công thức "${notification.recipeName}"`;
-                        case 'follow': return `${notification.actorName} đã theo dõi bạn`;
-                        case 'reply': return `${notification.actorName} đã trả lời bình luận của bạn`;
-                        case 'new_recipe': return `${notification.actorName} đã đăng công thức mới "${notification.recipeName}"`;
-                        default: return 'Bạn có thông báo mới';
-                      }
-                    };
                     return (
                       <TouchableOpacity
-                        style={[
-                          styles.notificationItem,
-                          { backgroundColor: !item.read ? (isDark ? '#1E1E3E' : '#FFF8F0') : 'transparent' },
-                        ]}
-                        onPress={async () => {
-                          if (!item.read) {
-                            await notificationService.markAsRead(item._id);
-                            setNotifications(prev => prev.map(n => n._id === item._id ? { ...n, read: true } : n));
-                            setUnreadCount(prev => Math.max(0, prev - 1));
-                          }
-                          if (item.recipeId) {
-                            setShowNotificationsModal(false);
-                            router.push(`/recipe/${item.recipeId}` as any);
-                          }
+                        style={[styles.favoriteRecipeCard, { backgroundColor: theme.card }]}
+                        onPress={() => {
+                          setShowNotificationsModal(false);
+                          router.push(`/recipe/${item._id}` as any);
                         }}
-                        activeOpacity={0.7}
+                        activeOpacity={0.8}
                       >
-                        <View style={styles.notificationContent}>
-                          <View style={[styles.notificationIcon, { backgroundColor: colors.primary + '20' }]}>
-                            <Ionicons name={getNotificationIcon(item.type) as any} size={20} color={colors.primary} />
+                        <Image
+                          source={{ uri: item.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400' }}
+                          style={styles.favoriteRecipeImage}
+                        />
+                        <View style={styles.favoriteRecipeContent}>
+                          <ThemedText style={[styles.favoriteRecipeTitle, { color: theme.text }]} numberOfLines={2}>
+                            {item.name}
+                          </ThemedText>
+                          <View style={styles.favoriteRecipeMeta}>
+                            <View style={styles.favoriteRecipeMetaItem}>
+                              <Ionicons name="time-outline" size={12} color={theme.textSecondary} />
+                              <ThemedText style={[styles.favoriteRecipeMetaText, { color: theme.textSecondary }]}>
+                                {(item.prepTime || 0) + (item.cookTime || 0)}p
+                              </ThemedText>
+                            </View>
+                            <View style={styles.favoriteRecipeMetaItem}>
+                              <Ionicons name="heart" size={12} color="#FF6B6B" />
+                              <ThemedText style={[styles.favoriteRecipeMetaText, { color: theme.textSecondary }]}>
+                                {item.saveCount || item.likeCount || 0}
+                              </ThemedText>
+                            </View>
                           </View>
-                          <View style={styles.notificationText}>
-                            <ThemedText style={[styles.notificationMessage, { color: theme.text }]} numberOfLines={2}>
-                              {getNotificationMessage(item)}
-                            </ThemedText>
-                            <ThemedText style={[styles.notificationTime, { color: theme.textSecondary }]}>
-                              {timeAgo}
-                            </ThemedText>
-                          </View>
-                          {item.recipeImage && (
-                            <Image source={{ uri: item.recipeImage }} style={styles.notificationImage} />
-                          )}
-                          {!item.read && (
-                            <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
-                          )}
                         </View>
                       </TouchableOpacity>
                     );
                   }}
                   ListEmptyComponent={
                     <View style={styles.followEmpty}>
-                      <Ionicons name="notifications-outline" size={48} color={theme.textSecondary} />
+                      <Ionicons name="heart-outline" size={48} color={theme.textSecondary} />
                       <ThemedText style={[styles.followEmptyText, { color: theme.textSecondary }]}>
-                        Chưa có thông báo nào
+                        Chưa có món ăn yêu thích nào
+                      </ThemedText>
+                      <ThemedText style={[styles.followEmptySubtext, { color: theme.textSecondary }]}>
+                        Hãy lưu các công thức bạn thích để xem lại sau
                       </ThemedText>
                     </View>
                   }
@@ -1915,7 +1852,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
   },
   followTabText: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '600',
   },
   followContent: {
@@ -2158,7 +2095,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
   },
   modalBody: {
@@ -2446,6 +2383,50 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 12,
     right: 12,
+  },
+  favoriteRecipeCard: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  favoriteRecipeImage: {
+    width: '100%',
+    height: 120,
+    resizeMode: 'cover',
+  },
+  favoriteRecipeContent: {
+    padding: 12,
+  },
+  favoriteRecipeTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 8,
+    minHeight: 36,
+  },
+  favoriteRecipeMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  favoriteRecipeMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  favoriteRecipeMetaText: {
+    fontSize: 10,
+    fontWeight: '500',
+  },
+  followEmptySubtext: {
+    fontSize: 13,
+    marginTop: 8,
+    textAlign: 'center',
   },
 });
 

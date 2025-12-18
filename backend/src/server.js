@@ -30,7 +30,6 @@ import authRoutes from './routes/authRoutes.js';
 import chatbotRoutes from './routes/chatbotRoutes.js';
 import mealPlanningRoutes from './routes/mealPlanningRoutes.js';
 import userRoutes from './routes/userRoutes.js';
-import recipeRoutes from './routes/recipeRoutes.js';
 import recipeManagementRoutes from './routes/recipeManagementRoutes.js';
 import achievementRoutes from './routes/achievementRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
@@ -126,12 +125,7 @@ app.use('/api/chatbot', chatbotRoutes);
 // - Endpoints: GET/POST/PUT/DELETE /api/meal-planning/*
 app.use('/api/meal-planning', mealPlanningRoutes);
 
-// Module 5: Recipe Images (Meal Planning)
-// - Upload/xóa ảnh cho meal planning
-// - Endpoints: POST/DELETE /api/recipes/meal-image
-app.use('/api/recipes', recipeRoutes);
-
-// Module 6: Recipe Management (CRUD)
+// Module 5: Recipe Management (CRUD)
 // - Tạo/sửa/xóa/xem công thức, rating
 // - Endpoints: GET/POST/PUT/DELETE /api/recipe-management/*
 app.use('/api/recipe-management', recipeManagementRoutes);
@@ -179,7 +173,6 @@ app.get('/api/health', (req, res) => {
       user: '/api/user',
       chatbot: '/api/chatbot',
       mealPlanning: '/api/meal-planning',
-      recipes: '/api/recipes',
       recipeManagement: '/api/recipe-management',
       achievements: '/api/achievements',
       messages: '/api/messages',
@@ -236,9 +229,8 @@ app.listen(PORT, () => {
   console.log('   [2] User Profile           → /api/user');
   console.log('   [3] AI Chatbot             → /api/chatbot');
   console.log('   [4] Meal Planning          → /api/meal-planning');
-  console.log('   [5] Recipe Images          → /api/recipes');
-  console.log('   [6] Recipe Management      → /api/recipe-management');
-  console.log('   [7] Achievements & Stats   → /api/achievements');
+  console.log('   [5] Recipe Management      → /api/recipe-management');
+  console.log('   [6] Achievements & Stats   → /api/achievements');
   console.log('============================================');
   console.log('');
 });

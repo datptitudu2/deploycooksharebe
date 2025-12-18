@@ -31,7 +31,7 @@ import {
   getStats,
 } from '../controllers/recipeManagementController.js';
 import { authenticate, optionalAuth } from '../middleware/auth.js';
-import { uploadMealImage, uploadCommentImage, uploadVideo, uploadRecipeMedia } from '../middleware/upload.js';
+import { uploadCommentImage, uploadVideo, uploadRecipeMedia } from '../middleware/upload.js';
 
 const router = express.Router();
 
