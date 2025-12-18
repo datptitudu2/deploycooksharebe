@@ -1,5 +1,6 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
+  "$comment": "This service runs the Node.js backend, NOT the Expo frontend",
   "build": {
     "builder": "NIXPACKS",
     "nixpacksConfigPath": "nixpacks.toml"
