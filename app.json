@@ -32,7 +32,7 @@
         "RECORD_AUDIO"
       ],
       "package": "com.datptitudu.cookshareapp",
-      "versionCode": 3,
+      "versionCode": 4,
       "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
