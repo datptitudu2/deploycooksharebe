@@ -7,6 +7,7 @@
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import OpenAI from 'openai';
 import { enrichWithYouTubeLinks } from '../utils/youtubeHelper.js';
 import { ChatbotHistory } from '../models/ChatbotHistory.js';
 
@@ -15,10 +16,25 @@ const __dirname = dirname(__filename);
 
 dotenv.config({ path: join(__dirname, '../../.env') });
 
-// Groq API Configuration (MIỄN PHÍ, nhanh)
+// Groq API Configuration (MIỄN PHÍ, nhanh) - Dùng cho text messages
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+// OpenAI API Configuration - Dùng cho image messages (vision)
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o'; // Vision cần dùng gpt-4o
+
+// Initialize OpenAI client
+let openaiClient = null;
+const getOpenAIClient = () => {
+  if (!openaiClient && OPENAI_API_KEY) {
+    openaiClient = new OpenAI({
+      apiKey: OPENAI_API_KEY,
+    });
+  }
+  return openaiClient;
+};
 
 // Model đã train (để reference)
 const HF_MODEL = process.env.HF_MODEL || 'uduptit/cookbot-vietnamese';
@@ -521,7 +537,78 @@ export const sendMessage = async (req, res) => {
 };
 
 /**
- * Send message with image (fallback to description)
+ * Gọi OpenAI Vision API để nhận diện ảnh
+ */
+async function callOpenAIVisionAPI(imageUrl, userMessage, dietMode) {
+  try {
+    if (!OPENAI_API_KEY) {
+      throw new Error('OpenAI API key chưa được cấu hình');
+    }
+
+    const client = getOpenAIClient();
+    if (!client) {
+      throw new Error('OpenAI client chưa được khởi tạo');
+    }
+
+    // Build system prompt với diet mode nếu có
+    let visionSystemPrompt = SYSTEM_PROMPT + '\n\nBạn có thể nhìn thấy ảnh nguyên liệu. Hãy nhận diện các nguyên liệu và đề xuất món ăn phù hợp.';
+    if (dietMode && dietMode !== 'none') {
+      const dietModeLabels = {
+        'weight-loss': 'giảm cân',
+        'weight-gain': 'tăng cân',
+        'muscle-gain': 'tăng cơ',
+        'healthy': 'khỏe mạnh',
+        'vegetarian': 'chay',
+        'low-carb': 'ít tinh bột',
+        'keto': 'keto',
+      };
+      visionSystemPrompt += `\n\nLƯU Ý: Người dùng đang theo chế độ ăn ${dietModeLabels[dietMode] || dietMode}. Hãy đề xuất món ăn từ nguyên liệu trong ảnh phù hợp với chế độ này.`;
+    }
+
+    // Prepare messages for vision API
+    const messages = [
+      {
+        role: 'system',
+        content: visionSystemPrompt,
+      },
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: userMessage || 'Nhận diện nguyên liệu trong ảnh này và đề xuất món ăn phù hợp. Liệt kê các nguyên liệu bạn thấy và gợi ý 2-3 món ăn có thể làm từ chúng.',
+          },
+          {
+            type: 'image_url',
+            image_url: {
+              url: imageUrl,
+            },
+          },
+        ],
+      },
+    ];
+
+    console.log(`🤖 Calling OpenAI Vision API (${OPENAI_MODEL})...`);
+
+    const completion = await client.chat.completions.create({
+      model: OPENAI_MODEL, // gpt-4o cho vision
+      messages: messages,
+      temperature: 0.8,
+      max_tokens: 800,
+    });
+
+    const response = completion.choices[0]?.message?.content || 'Xin lỗi, tôi không thể nhận diện ảnh lúc này.';
+    console.log('✅ Got response from OpenAI Vision API');
+    
+    return response.trim();
+  } catch (error) {
+    console.error('Error calling OpenAI Vision API:', error);
+    throw error;
+  }
+}
+
+/**
+ * Send message with image - Dùng OpenAI Vision API
  */
 export const sendMessageWithImage = async (req, res) => {
   try {
@@ -535,29 +622,55 @@ export const sendMessageWithImage = async (req, res) => {
       });
     }
 
-    console.log('🤖 CookBot (Self-hosted) received image message:', message || 'Nhận diện nguyên liệu');
+    // Kiểm tra OpenAI API key
+    if (!OPENAI_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        message: 'OpenAI API key chưa được cấu hình. Vui lòng cấu hình OPENAI_API_KEY trong .env',
+      });
+    }
 
-    // Convert image to base64 for storage
+    console.log('🤖 CookBot (OpenAI Vision) received image message:', message || 'Nhận diện nguyên liệu');
+
+    // Convert image to base64 for OpenAI Vision API
     const base64Image = imageFile.buffer.toString('base64');
     const imageUrl = `data:${imageFile.mimetype};base64,${base64Image}`;
 
-    // Model GPT-2 không hỗ trợ vision
-    // Trả về response hướng dẫn mô tả nguyên liệu
-    let response = `Mình chưa thể nhận diện ảnh trực tiếp. Bạn có thể mô tả các nguyên liệu trong ảnh không? Ví dụ: "Tôi có trứng, cà chua, hành" - mình sẽ gợi ý món ăn phù hợp!`;
-
-    // Nếu có message kèm theo, thử gợi ý dựa trên message
-    if (message && message.trim()) {
-      try {
-        const fullMessage = dietMode && dietMode !== 'none' 
-          ? `[Chế độ ăn: ${dietMode}] ${message}`
-          : message;
-        
-        const aiResponse = await callGroqAPI(fullMessage);
-        if (aiResponse && aiResponse.length > 10) {
-          response = aiResponse;
+    let response;
+    
+    try {
+      // Gọi OpenAI Vision API để nhận diện ảnh
+      console.log('📤 Sending image to OpenAI Vision API...');
+      response = await callOpenAIVisionAPI(imageUrl, message, dietMode);
+      
+      if (!response || response.length < 10) {
+        throw new Error('Empty response from OpenAI Vision API');
+      }
+      
+      console.log('✅ Got response from OpenAI Vision API');
+    } catch (visionError) {
+      console.error('❌ OpenAI Vision API error:', visionError.message);
+      
+      // Fallback: Nếu có message kèm theo, dùng Groq API
+      if (message && message.trim()) {
+        try {
+          const fullMessage = dietMode && dietMode !== 'none' 
+            ? `[Chế độ ăn: ${dietMode}] ${message}`
+            : message;
+          
+          console.log('🔄 Falling back to Groq API for text message...');
+          const groqResponse = await callGroqAPI(fullMessage);
+          if (groqResponse && groqResponse.length > 10) {
+            response = groqResponse;
+          } else {
+            throw new Error('Empty Groq response');
+          }
+        } catch (groqError) {
+          console.log('Groq API fallback also failed:', groqError.message);
+          response = `Mình chưa thể nhận diện ảnh trực tiếp. Bạn có thể mô tả các nguyên liệu trong ảnh không? Ví dụ: "Tôi có trứng, cà chua, hành" - mình sẽ gợi ý món ăn phù hợp!`;
         }
-      } catch (modelError) {
-        console.log('Groq API unavailable for image message, using fallback:', modelError.message);
+      } else {
+        response = `Mình chưa thể nhận diện ảnh trực tiếp. Bạn có thể mô tả các nguyên liệu trong ảnh không? Ví dụ: "Tôi có trứng, cà chua, hành" - mình sẽ gợi ý món ăn phù hợp!`;
       }
     }
 
@@ -602,8 +715,9 @@ export const sendMessageWithImage = async (req, res) => {
       response,
       videoInfo,
       mealName,
-      modelType: 'cookbot-finetuned',
+      modelType: 'cookbot-finetuned-vision', // Fine-tuned CookBot với OpenAI Vision cho ảnh
       trainedModel: HF_MODEL,
+      visionModel: OPENAI_MODEL, // OpenAI Vision model
     });
   } catch (error) {
     console.error('Image message error:', error);
