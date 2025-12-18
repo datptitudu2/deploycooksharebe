@@ -36,6 +36,13 @@ if (EMAIL_USER && EMAIL_PASS) {
       user: EMAIL_USER,
       pass: EMAIL_PASS,
     },
+    // Tối ưu connection để gửi email nhanh hơn
+    connectionTimeout: 10000, // 10s timeout cho connection
+    greetingTimeout: 10000, // 10s timeout cho greeting
+    socketTimeout: 10000, // 10s timeout cho socket
+    pool: true, // Sử dụng connection pooling
+    maxConnections: 5, // Tối đa 5 connections
+    maxMessages: 100, // Tối đa 100 messages per connection
   });
   console.log('[EMAIL] Email service initialized successfully');
 } else {

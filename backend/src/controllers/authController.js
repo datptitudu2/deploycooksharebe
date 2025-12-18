@@ -197,29 +197,28 @@ export const forgotPassword = async (req, res) => {
     );
     console.log('[AUTH] OTP stored in database');
 
-    // Send OTP via email
-    console.log(`[AUTH] Sending OTP email to: ${email}`);
-    const emailResult = await sendOTPEmail(email, otp);
-    console.log('[AUTH] Email result:', JSON.stringify(emailResult, null, 2));
-    
-    if (!emailResult.success) {
-      // If email fails, log OTP for development/testing
-      console.log(`[DEV] Email sending failed. OTP for ${email}: ${otp}`);
-      console.error('[EMAIL] Error:', emailResult.error);
-      
-      // Still return success but log the OTP for development
-      // In production, you might want to return an error instead
-      return res.json({
-        success: true,
-        message: 'Mã OTP đã được tạo. Vui lòng kiểm tra email (hoặc console log nếu email service chưa được cấu hình).',
-        // Only return OTP in development mode if email failed
-        otp: process.env.NODE_ENV === 'development' ? otp : undefined,
+    // Send OTP via email (async, không chờ response để tránh timeout)
+    console.log(`[AUTH] Sending OTP email to: ${email} (async)`);
+    sendOTPEmail(email, otp)
+      .then((emailResult) => {
+        if (emailResult.success) {
+          console.log('[AUTH] OTP email sent successfully:', emailResult.messageId);
+        } else {
+          console.error('[EMAIL] Error sending OTP email:', emailResult.error);
+          console.log(`[DEV] Email sending failed. OTP for ${email}: ${otp}`);
+        }
+      })
+      .catch((error) => {
+        console.error('[EMAIL] Unexpected error sending OTP email:', error);
+        console.log(`[DEV] Email sending failed. OTP for ${email}: ${otp}`);
       });
-    }
 
+    // Trả về response ngay lập tức, không chờ email gửi xong
     res.json({
       success: true,
       message: 'Mã OTP đã được gửi. Vui lòng kiểm tra email.',
+      // Chỉ trả về OTP trong development mode để test
+      otp: process.env.NODE_ENV === 'development' ? otp : undefined,
     });
   } catch (error) {
     console.error('[AUTH] Forgot password error:', error);
