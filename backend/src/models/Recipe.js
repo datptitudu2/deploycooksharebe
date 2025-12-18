@@ -5,6 +5,7 @@
 
 import { connectToDatabase } from '../config/database.js';
 import { ObjectId } from 'mongodb';
+import { getFileUrlFromStorage } from '../utils/storage.js';
 
 const COLLECTION_NAME = 'recipes';
 const SAVES_COLLECTION = 'recipe_saves';
@@ -741,10 +742,13 @@ export class Recipe {
 
   /**
    * Lấy featured chefs (users có nhiều recipes nhất)
+   * @param {number} limit - Số lượng chefs
+   * @param {Object} req - Express request object (để convert avatar URL)
    */
-  static async getFeaturedChefs(limit = 10) {
+  static async getFeaturedChefs(limit = 10, req = null) {
     const { db } = await connectToDatabase();
     
+    // Lấy danh sách chefs từ recipes
     const chefs = await db.collection(COLLECTION_NAME).aggregate([
       { $match: { isPublic: true } },
       { $group: { 
@@ -758,13 +762,57 @@ export class Recipe {
       { $limit: limit },
     ]).toArray();
 
-    return chefs.map(c => ({
-      _id: c._id,
-      name: c.name || 'Chef',
-      avatar: c.avatar,
-      recipesCount: c.recipesCount,
-      totalLikes: c.totalLikes,
-    }));
+    // Lấy avatar mới nhất từ User collection (bao gồm storage mode)
+    const userIds = chefs.map(c => new ObjectId(c._id));
+    const users = await db.collection('users').find(
+      { _id: { $in: userIds } },
+      { projection: { _id: 1, name: 1, avatar: 1, storage: 1 } }
+    ).toArray();
+
+    // Tạo map để lookup nhanh
+    const userMap = new Map(users.map(u => [u._id.toString(), u]));
+
+    return chefs.map(c => {
+      const user = userMap.get(c._id.toString());
+      // Ưu tiên avatar từ User collection (mới nhất), fallback về Recipe
+      let avatar = user?.avatar || c.avatar || null;
+      
+      // Clean up avatar URL - loại bỏ null string, empty string
+      if (avatar && (avatar === 'null' || avatar === 'undefined' || avatar.trim() === '')) {
+        avatar = null;
+      }
+      
+      // Convert avatar filename thành URL đầy đủ (nếu cần)
+      // Nếu avatar đã là URL đầy đủ (bắt đầu với http/https) thì dùng luôn
+      // Nếu không, convert qua getFileUrlFromStorage
+      if (avatar && req) {
+        // Check nếu chưa phải URL đầy đủ
+        if (!avatar.startsWith('http://') && !avatar.startsWith('https://')) {
+          const storage = user?.storage || 'cloud'; // Default cloud vì đa số dùng Cloudinary
+          try {
+            const convertedUrl = getFileUrlFromStorage(req, avatar, 'avatar', storage);
+            console.log(`[FeaturedChef] Converting avatar: ${avatar} -> ${convertedUrl}`);
+            avatar = convertedUrl;
+          } catch (error) {
+            console.error('[FeaturedChef] Error converting avatar URL:', error);
+            // Fallback về null nếu convert lỗi
+            avatar = null;
+          }
+        }
+      } else if (avatar && !avatar.startsWith('http://') && !avatar.startsWith('https://')) {
+        // Nếu không có req nhưng avatar không phải URL, log warning
+        console.warn(`[FeaturedChef] Avatar is not a full URL and req is missing: ${avatar}`);
+        avatar = null; // Set null để frontend dùng fallback
+      }
+      
+      return {
+        _id: c._id.toString(), // Đảm bảo _id là string
+        name: user?.name || c.name || 'Chef',
+        avatar: avatar, // Avatar URL đầy đủ từ Cloudinary hoặc local
+        recipesCount: c.recipesCount || 0,
+        totalLikes: c.totalLikes || 0,
+      };
+    });
   }
 
   /**

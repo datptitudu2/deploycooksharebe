@@ -917,7 +917,8 @@ export const getCategories = async (req, res) => {
 export const getFeaturedChefs = async (req, res) => {
   try {
     const { limit = 10 } = req.query;
-    const chefs = await Recipe.getFeaturedChefs(parseInt(limit));
+    // Pass req object để convert avatar filename thành URL đầy đủ
+    const chefs = await Recipe.getFeaturedChefs(parseInt(limit), req);
 
     res.json({
       success: true,

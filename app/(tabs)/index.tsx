@@ -15,6 +15,7 @@ import {
   ImageBackground,
   Alert,
 } from 'react-native';
+import { Image as ExpoImage } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -83,6 +84,9 @@ export default function HomeScreen() {
   // Carousel state
   const [activeCarouselIndex, setActiveCarouselIndex] = useState(0);
   const carouselRef = useRef<FlatList>(null);
+
+  // Track avatar load errors
+  const [avatarErrors, setAvatarErrors] = useState<Set<string>>(new Set());
 
 
   // Fetch user stats
@@ -702,10 +706,46 @@ export default function HomeScreen() {
                   end={{ x: 1, y: 1 }}
                 >
                   <View style={[styles.chefAvatarInner, { backgroundColor: isDark ? '#1f1f3a' : '#fff' }]}>
-                    <Image
-                      source={{ uri: chef.avatar || `https://i.pravatar.cc/100?u=${chef._id}` }}
-                      style={styles.chefAvatar}
-                    />
+                    {(() => {
+                      // Xử lý avatar URL - ưu tiên avatar từ API, fallback về pravatar
+                      const hasValidAvatar = chef.avatar && 
+                                             chef.avatar.trim() !== '' && 
+                                             chef.avatar !== 'null' && 
+                                             chef.avatar !== 'undefined' &&
+                                             !avatarErrors.has(chef._id);
+                      
+                      const avatarUrl = hasValidAvatar 
+                        ? chef.avatar 
+                        : `https://i.pravatar.cc/100?u=${chef._id || 'default'}`;
+                      
+                      // Dùng expo-image cho Android compatibility tốt hơn
+                      return (
+                        <ExpoImage
+                          source={{ uri: avatarUrl }}
+                          style={styles.chefAvatar}
+                          contentFit="cover"
+                          transition={200}
+                          placeholder={{ blurhash: 'L6PZfSi_.AyE_3t7t7R**0o#DgR4' }}
+                          onError={(error) => {
+                            console.log('[Avatar Error] Chef:', chef._id, 'URL:', avatarUrl, 'Error:', error);
+                            // Mark as error để dùng fallback
+                            if (!avatarErrors.has(chef._id)) {
+                              setAvatarErrors(prev => new Set([...prev, chef._id]));
+                            }
+                          }}
+                          onLoad={() => {
+                            // Remove from errors khi load thành công
+                            if (avatarErrors.has(chef._id)) {
+                              setAvatarErrors(prev => {
+                                const newSet = new Set(prev);
+                                newSet.delete(chef._id);
+                                return newSet;
+                              });
+                            }
+                          }}
+                        />
+                      );
+                    })()}
                 </View>
                 </LinearGradient>
                 
@@ -1885,6 +1925,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
+    backgroundColor: 'transparent',
   },
   chefVerified: {
     position: 'absolute',
