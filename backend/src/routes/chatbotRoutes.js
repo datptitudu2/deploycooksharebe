@@ -2,23 +2,36 @@ import express from 'express';
 import multer from 'multer';
 import { authenticate } from '../middleware/auth.js';
 
-// Import cả 2 controller
+// Import controllers
 import * as openaiController from '../controllers/chatbotController.js';
 import * as selfHostedController from '../controllers/chatbotSelfHostedController.js';
 
 const router = express.Router();
 
 // Kiểm tra sử dụng model nào
-const USE_SELF_HOSTED = process.env.USE_SELF_HOSTED_AI === 'true';
+// Default: Dùng Groq (CookBot Fine-tuned)
+const CHATBOT_MODE = process.env.CHATBOT_MODE || 'groq';
 
 // Chọn controller phù hợp
-const chatController = USE_SELF_HOSTED ? selfHostedController : openaiController;
+let chatController;
+let modeDescription;
 
-console.log(`🤖 Chatbot mode: ${USE_SELF_HOSTED ? 'COOKBOT FINE-TUNED (Groq API + Training Data)' : 'OpenAI API'}`);
-if (USE_SELF_HOSTED) {
-  console.log(`   📚 Training Data: dataset_cookbot.jsonl (50+ samples)`);
-  console.log(`   🔧 System Prompt: Fine-tuned (200+ lines)`);
-  console.log(`   🌐 Model: https://huggingface.co/uduptit/cookbot-vietnamese`);
+switch (CHATBOT_MODE.toLowerCase()) {
+  case 'groq':
+  case 'self-hosted':
+  default:
+    chatController = selfHostedController;
+    modeDescription = 'COOKBOT FINE-TUNED (Groq API + Training Data)';
+    console.log(`🤖 Chatbot mode: ${modeDescription}`);
+    console.log(`   📚 Training Data: dataset_cookbot.jsonl (50+ samples)`);
+    console.log(`   🔧 System Prompt: Fine-tuned (200+ lines)`);
+    console.log(`   🌐 Model: https://huggingface.co/uduptit/cookbot-vietnamese`);
+    break;
+  case 'openai':
+    chatController = openaiController;
+    modeDescription = 'OpenAI API';
+    console.log(`🤖 Chatbot mode: ${modeDescription}`);
+    break;
 }
 
 // Configure multer for image upload

@@ -19,9 +19,9 @@ import Constants from 'expo-constants';
  * 📖 Xem chi tiết: API_CONFIG_GUIDE.md
  */
 
-// Production API URL - ✅ ĐÃ CẬP NHẬT
-// Backend URL: https://deploycooksharebe-production.up.railway.app
-const PRODUCTION_API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://deploycooksharebe-production.up.railway.app/api';
+// Production API URL - Render.com
+// Backend URL: https://deploycooksharebe.onrender.com
+const PRODUCTION_API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://deploycooksharebe.onrender.com/api';
 
 // Development IP - chỉ dùng khi test trên thiết bị thật (KHÔNG ảnh hưởng production)
 const YOUR_COMPUTER_IP = '192.168.1.126'; // ⬅️ IP của máy tính (Wi-Fi) - chỉ dùng trong development

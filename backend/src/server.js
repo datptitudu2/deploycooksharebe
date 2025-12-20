@@ -130,27 +130,27 @@ app.use('/api/meal-planning', mealPlanningRoutes);
 // - Endpoints: GET/POST/PUT/DELETE /api/recipe-management/*
 app.use('/api/recipe-management', recipeManagementRoutes);
 
-// Module 7: Achievements & Stats
+// Module 6: Achievements & Stats
 // - Thành tích, chuỗi, badges, stats
 // - Endpoints: GET /api/achievements/*
 app.use('/api/achievements', achievementRoutes);
 
-// Module 8: Messaging
+// Module 7: Messaging
 // - Chat giữa users, conversations
 // - Endpoints: POST /api/messages/send, GET /api/messages/conversations, /conversation/:partnerId
 app.use('/api/messages', messageRoutes);
 
-// Module 9: Notifications
+// Module 8: Notifications
 // - Thông báo: comment, rating, like, follow, reply
 // - Endpoints: GET /api/notifications, PUT /api/notifications/:id/read
 app.use('/api/notifications', notificationRoutes);
 
-// Module 10: Stories
+// Module 9: Stories
 // - Cooking stories, tips
 // - Endpoints: GET /api/stories, POST /api/stories
 app.use('/api/stories', storyRoutes);
 
-// Module 11: Daily Challenges
+// Module 10: Daily Challenges
 // - Thử thách hàng ngày, gamification
 // - Endpoints: GET /api/challenges/today, POST /api/challenges/join
 app.use('/api/challenges', challengeRoutes);
